@@ -44,6 +44,9 @@ and run!
   `<filename>.<number>.in` and corresponding outputs are named `<filename>.ans`
   etc. where `<filename>` comes from `kattest <filename>.cpp` for instance.
 
+> **Note**
+> Multiple support files are not supported as of yet
+
 ## Installation
 
 ```sh
