@@ -52,3 +52,8 @@ pip install .
 ```
 
 Now it should hopefully work, enjoy!
+
+### Nix
+
+There is also a flake for Nix users, but if you use Nix I trust you know how to
+use flakes.
