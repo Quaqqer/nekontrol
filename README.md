@@ -13,7 +13,7 @@ if the output is correct.
 
 ### Incorrect output
 
-![Demo of an unsuccessful run](./res/demo1.svg)
+![Demo of an unsuccessful run](./res/demo2.svg)
 
 ## Features
 
