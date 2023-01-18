@@ -26,6 +26,8 @@ The current supported languages are:
 - C++
 - Rust
 - Python
+  >**Note**
+  > Runs with `pypy3`, for kattis compatibility
 - Haskell
 
 Adding more languages are left as an exercise for the reader.
