@@ -11,12 +11,14 @@ def extension_lang(extension: str) -> str | None:
             return "python"
         case ".hs":
             return "haskell"
+        case ".rs":
+            return "rust"
         case _:
             return None
 
 
 def is_compiled(lang: str):
-    return lang in {"c++", "haskell"}
+    return lang in {"c++", "haskell", "rust"}
 
 
 def script_cmdline(lang: str, file_path: str) -> list[str]:
@@ -52,6 +54,22 @@ def compile(file: str, language: str, output_file: str, color: bool) -> None | s
                     "-o",
                     output_file,
                     f"-fdiagnostics-color={'always' if color else 'never'}",
+                ]
+            )
+
+        case "rust":
+            return compile_generic(
+                [
+                    "rustc",
+                    "-O",
+                    "--crate-type",
+                    "bin",
+                    "--edition=2018",
+                    file,
+                    "--color",
+                    "always" if color else "never",
+                    "-o",
+                    output_file,
                 ]
             )
 

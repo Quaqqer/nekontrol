@@ -24,6 +24,7 @@ if the output is correct.
 The current supported languages are:
 
 - C++
+- Rust
 - Python
 - Haskell
 
