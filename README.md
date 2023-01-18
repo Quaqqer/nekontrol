@@ -9,11 +9,11 @@ if the output is correct.
 
 ### Successful run
 
-https://asciinema.org/a/Hfh7SgCoaIiPKc4Y1IpvTQ40l
+![Demo of a succesful run](./res/demo1.svg)
 
 ### Incorrect output
 
-https://asciinema.org/a/RXwhKdsvaN4yafV27D4nW71D0
+![Demo of an unsuccessful run](./res/demo1.svg)
 
 ## Features
 
