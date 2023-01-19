@@ -3,8 +3,6 @@ import os.path as path
 import subprocess
 import sys
 
-import termcolor
-
 from .. import compare, util
 from . import spinner
 
