@@ -62,3 +62,8 @@ Now it should hopefully work, enjoy!
 
 There is also a flake for Nix users, but if you use Nix I trust you know how to
 use flakes.
+
+## Other
+
+- If you are thinking "`nekontrol` is a knida weeby name", have you ever tried
+  coming up with an original name?
