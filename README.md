@@ -69,4 +69,4 @@ use flakes.
 ## Other
 
 - If you are thinking "nekontrol is a kinda weeby name", I ask you: have you
-- ever tried coming up with an original name?
+  ever tried coming up with an original name?
