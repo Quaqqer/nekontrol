@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="nekontrol",
-    version="0.1.0",
+    version="0.1.1",
     package_dir={"nekontrol": "nekontrol"},
     install_requires=[
         "click==8.1.3",

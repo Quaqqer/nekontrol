@@ -22,6 +22,7 @@ class Spinner:
 
         self._result: bool | None = None
         self._thread: threading.Thread | None = None
+        self._stopped = False
 
     def __enter__(self):
         self.start()
@@ -55,20 +56,23 @@ class Spinner:
             self._thread.start()
 
     def _stop(self):
-        if self._thread is not None:
-            self.stop_running.set()
-            self._thread.join()
+        if not self._stopped:
+            self._stopped = True
 
-        if self._result is not None:
-            if self._result:
-                self._stream.write(colored(self._final_ok, "green"))
-            else:
-                self._stream.write(colored(self._final_fail, "red"))
-            self._stream.flush()
+            if self._thread is not None:
+                self.stop_running.set()
+                self._thread.join()
 
-        if self._message is not None:
-            self._stream.write("\n")
-            self._stream.flush()
+            if self._result is not None:
+                if self._result:
+                    self._stream.write(colored(self._final_ok, "green"))
+                else:
+                    self._stream.write(colored(self._final_fail, "red"))
+                self._stream.flush()
+
+            if self._message is not None:
+                self._stream.write("\n")
+                self._stream.flush()
 
     def ok(self, result=True):
         self._result = result

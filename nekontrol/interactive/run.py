@@ -9,9 +9,11 @@ from .. import compare, util
 from . import spinner
 
 
-def run_all(name: str, cmdline: list[str], ios: list[tuple[str, str | None, str]]):
+def run_all(
+    name: str, cmdline: list[str], ios: list[tuple[str, str | None, str]], color: bool
+):
     for i, o, from_ in ios:
-        run(name, cmdline, i, o, from_)
+        run(name, cmdline, i, o, from_, color)
 
 
 def run(
@@ -20,7 +22,10 @@ def run(
     input_file: str,
     expected_file: str | None,
     from_: str,
+    color: bool,
 ):
+    c = util.cw(color)
+
     with spinner.Spinner(
         f"Running {name} with {from_} input {path.basename(input_file)} "
     ) as s:
@@ -38,16 +43,16 @@ def run(
                     output, expected.read(), input_file, os.isatty(sys.stdin.fileno())
                 )
 
-                if diff is None:
-                    s.ok()
-                else:
-                    s.fail()
+                s.stop(isinstance(diff, bool))
 
-    if diff is not None:
+                if diff is True:
+                    print(c("NOTE: The output contained debug lines", "yellow"))
+
+    if isinstance(diff, str):
         print(diff)
     elif expected_file is None:
-        print(termcolor.colored("Input:", "yellow"))
+        print(c("Input:", "yellow"))
         with open(input_file, "r") as ifile:
             print(util.indented(ifile.read()))
-        print(termcolor.colored("Got output:", "yellow"))
+        print(c("Got output:", "yellow"))
         print(util.indented(output))

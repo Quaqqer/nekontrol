@@ -59,7 +59,7 @@ def cli(file_path: str, problem: str | None, color: bool):
                 print(compile_errors)
                 exit(1)
 
-            run.run_all(file_base, [executable], ios)
+            run.run_all(file_base, [executable], ios, color)
     else:
         cmdline = language.script_cmdline(lang, file_path)
-        run.run_all(file_base, cmdline, ios)
+        run.run_all(file_base, cmdline, ios, color)

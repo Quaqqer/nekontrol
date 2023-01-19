@@ -18,6 +18,9 @@ against local and sample input and output.
 - Automatically downloads sample input and output
 - Discovers local sample input and output
 - Compiles your source code and runs it with local and sample input and output
+- Ignores lines starting with "dbg" or "debug" (case insensitive) when comparing
+  with answer output. If debug lines are discovered then you are notified in the
+  output.
 
 The current supported languages are:
 

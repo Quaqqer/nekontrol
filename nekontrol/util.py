@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+import termcolor
+
 
 class TempFileName:
     def __init__(self, *args):
@@ -18,3 +20,15 @@ class TempFileName:
 
 def indented(s: str) -> str:
     return "\n".join("  " + ds for ds in s.splitlines())
+
+
+def cw(color: bool):
+    """Create a termcolor.colored wrapper that will or will not color the string."""
+
+    def inner(s, *args):
+        if color:
+            return termcolor.colored(s, *args)
+        else:
+            return s
+
+    return inner
