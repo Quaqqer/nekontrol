@@ -1,6 +1,6 @@
-# nekontrol - A kattis solution tester
+# nekontrol - Control your kattis solutions
 
-This is a simple program that aims to compile, run and test kattis problems
+This is a simple program that compiles, runs and tests your kattis solutions
 against local and sample input and output.
 
 ## Demo
@@ -16,9 +16,8 @@ against local and sample input and output.
 ## Features
 
 - Automatically downloads sample input and output
-- Automatically finds local sample input and output
-- Automatically compiles your source code and runs it with custom and sample
-  input and output
+- Discovers local sample input and output
+- Compiles your source code and runs it with local and sample input and output
 
 The current supported languages are:
 

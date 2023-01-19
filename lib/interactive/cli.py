@@ -13,9 +13,15 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
 
 @click.command()
 @click.argument("file-path", metavar="FILE", type=executable_file)
-@click.option("--problem", type=str)
-@click.option("--color", type=bool, default=os.isatty(sys.stdout.fileno()))
+@click.option("--problem", type=str, help="The kattis problem name")
+@click.option(
+    "--color",
+    type=bool,
+    default=os.isatty(sys.stdout.fileno()),
+    help="If it should output with color or not",
+)
 def cli(file_path: str, problem: str | None, color: bool):
+    """nekontrol - Control your kattis solutions"""
     file_name = path.basename(file_path)
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
