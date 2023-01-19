@@ -4,6 +4,7 @@
 - Use pyproject.toml instead of setup.py
 - Add flake8 configuration
 - Bugfix: Fix stuck when compiling with large outputs because it can't flush
+- Bugfix: Store in correct cache directory
 
 # 0.1.1
 

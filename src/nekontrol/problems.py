@@ -15,7 +15,7 @@ ProblemIO = tuple[str, str | None, str]
 
 
 def problem_dir(problem: str) -> str:
-    return path.join(appdirs.user_cache_dir("kattest"), "problems", problem)
+    return path.join(appdirs.user_cache_dir("nekontrol"), "problems", problem)
 
 
 def download_tests(problem: str) -> bool:
