@@ -60,9 +60,9 @@ def color_diff(diff: list[str]) -> list[str]:
     def color_line(line: str) -> str:
         match line[0:2]:
             case "+ " | "- " as start:
-                return termcolor.colored(start, on_color="on_red") + line[2:]
+                return termcolor.colored(start, "red") + line[2:]
             case "? " as start:
-                return termcolor.colored(start, on_color="on_yellow") + line[2:]
+                return termcolor.colored(start, "yellow") + line[2:]
             case _:
                 return line
 

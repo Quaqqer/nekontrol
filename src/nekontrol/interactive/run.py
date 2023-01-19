@@ -28,29 +28,43 @@ def run(
         f"Running {name} with {from_} input {path.basename(input_file)} "
     ) as s:
         with open(input_file, "r") as input:
-            p = subprocess.Popen(cmdline, stdin=input, stdout=subprocess.PIPE)
+            p = subprocess.Popen(
+                cmdline, stdin=input, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
 
-            assert p.stdout
-            output = p.stdout.read().decode("utf-8")
+            byte_streams = p.communicate()
+            exit_code = p.returncode
+            stdout, stderr = [s.decode("utf-8") for s in byte_streams]
 
         diff = None
 
         if expected_file is not None:
             with open(expected_file, "r") as expected:
                 diff = compare.compare_outputs(
-                    output, expected.read(), input_file, os.isatty(sys.stdin.fileno())
+                    stdout, expected.read(), input_file, os.isatty(sys.stdin.fileno())
                 )
 
                 s.stop(isinstance(diff, bool))
 
-                if diff is True:
+                if isinstance(diff, str):
+                    print(diff)
+                elif expected_file is None:
+                    print(c("Input:", "yellow"))
+                    with open(input_file, "r") as ifile:
+                        print(util.indented(ifile.read()))
+                    print(c("Got output:", "yellow"))
+                    print(util.indented(stdout))
+                elif diff is True:
                     print(c("NOTE: The output contained debug lines", "yellow"))
 
-    if isinstance(diff, str):
-        print(diff)
-    elif expected_file is None:
-        print(c("Input:", "yellow"))
-        with open(input_file, "r") as ifile:
-            print(util.indented(ifile.read()))
-        print(c("Got output:", "yellow"))
-        print(util.indented(output))
+                if exit_code != 0:
+                    print(
+                        c(
+                            f"Proccess exited with a non-zero exit code"
+                            + (" and the following stderr:" if stderr else ""),
+                            "red",
+                        )
+                    )
+
+                    if stderr:
+                        print(util.indented(stderr))
