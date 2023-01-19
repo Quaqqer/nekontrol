@@ -1,4 +1,4 @@
-# kattest - A kattis solution tester
+# nekontrol - A kattis solution tester
 
 This is a simple program that aims to compile, run and test kattis problems
 against local and sample input and output.
@@ -33,17 +33,17 @@ Adding more languages are left as an exercise for the reader.
 
 ## Usage
 
-Simply run `kattest <source file>` and it should hopefully compile (if needed)
+Simply run `nekontrol <source file>` and it should hopefully compile (if needed)
 and run!
 
-- `kattest` assumes that the name of the source files matches the name of the
+- `nekontrol` assumes that the name of the source files matches the name of the
   problem (found in the url, ex. https://open.kattis.com/problems/<b>hello</b>).
   If this assumption is incorrect, you can specify the problem with
   `--problem <problem name>`. Local files are still matched with the filename
   regardless of the problem specified.
 - Input and output files should follow the format `<filename>.in` or
   `<filename>.<number>.in` and corresponding outputs are named `<filename>.ans`
-  etc. where `<filename>` comes from `kattest <filename>.cpp` for instance.
+  etc. where `<filename>` comes from `nekontrol <filename>.cpp` for instance.
 
 > **Note**
 > Multiple support files are not supported as of yet
@@ -51,8 +51,8 @@ and run!
 ## Installation
 
 ```sh
-git clone https://github.com/Quaqqer/kattest.git
-cd kattest
+git clone https://github.com/Quaqqer/nekontrol.git
+cd nekontrol
 pip install .
 ```
 

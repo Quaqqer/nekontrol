@@ -15,9 +15,9 @@
           pyPkgs.natsort
         ];
 
-        kattest = (pkgs.callPackage ({ python310, installShellFiles }:
+        nekontrol = (pkgs.callPackage ({ python310, installShellFiles }:
           python310.pkgs.buildPythonApplication rec {
-            pname = "kattest";
+            pname = "nekontrol";
             version = "0.1.0";
 
             src = ./.;
@@ -26,10 +26,10 @@
 
             propagatedBuildInputs = pythonDeps python310.pkgs;
             postInstall = ''
-              installShellCompletion --cmd kattest \
-                --bash <(_KATTEST_COMPLETE=bash_source $out/bin/kattest) \
-                --zsh <(_KATTEST_COMPLETE=zsh_source $out/bin/kattest) \
-                --fish <(_KATTEST_COMPLETE=fish_source $out/bin/kattest) \
+              installShellCompletion --cmd nekontrol \
+                --bash <(_NEKONTROL_COMPLETE=bash_source $out/bin/nekontrol) \
+                --zsh <(_NEKONTROL_COMPLETE=zsh_source $out/bin/nekontrol) \
+                --fish <(_NEKONTROL_COMPLETE=fish_source $out/bin/nekontrol) \
             '';
           }) { });
       in {
@@ -38,11 +38,11 @@
           buildInputs = with pkgs; [
             (python310.withPackages pythonDeps)
 
-            kattest
+            nekontrol
           ];
         };
 
-        packages.default = kattest;
-        packages.kattest = kattest;
+        packages.default = nekontrol;
+        packages.nekontrol = nekontrol;
       });
 }
