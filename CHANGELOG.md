@@ -3,6 +3,8 @@
 - Ignore inline debug "(dbg...)" or "(debug...)"
 - Use pyproject.toml instead of setup.py
 - Add flake8 configuration
+- Print text if exit code was non-zero
+- Print runtime error stream if exit code was non-zero
 - Bugfix: Fix stuck when compiling with large outputs because it can't flush
 - Bugfix: Store in correct cache directory
 

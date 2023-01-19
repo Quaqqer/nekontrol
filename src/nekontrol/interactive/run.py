@@ -60,7 +60,7 @@ def run(
                 if exit_code != 0:
                     print(
                         c(
-                            f"Proccess exited with a non-zero exit code"
+                            f"Proccess exited with a non-zero exit code {exit_code}"
                             + (" and the following stderr:" if stderr else ""),
                             "red",
                         )
