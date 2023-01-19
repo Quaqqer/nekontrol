@@ -9,7 +9,9 @@ class TempFileName:
         self.args = args
 
     def __enter__(self) -> str:
-        fd, file_name = tempfile.mkstemp(*self.args)
+        fd, file_name = tempfile.mkstemp(
+            ".exe" if os.name == "nt" else None, *self.args
+        )
         os.close(fd)
         self.file_name = file_name
         return self.file_name
