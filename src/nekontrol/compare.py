@@ -6,6 +6,7 @@ import termcolor
 from . import util
 
 debug_regex = re.compile("^(?:debug|dbg)", re.IGNORECASE)
+inline_debug_regex = re.compile(r"\((?:dbg|debug)[^)]*\)", re.IGNORECASE)
 
 
 def compare_outputs(
@@ -13,22 +14,24 @@ def compare_outputs(
 ) -> str | bool:
     c = util.cw(colors)
 
-    output_lines = []
     found_debug = False
+
     if ignore_debug:
+        output_lines = []
         for line in output.splitlines():
             if debug_regex.match(line):
                 found_debug = True
-            else:
-                output_lines.append(line)
+                continue
+
+            inline_line = inline_debug_regex.sub("", line)
+
+            if len(inline_line) != len(line):
+                found_debug = True
+            line = inline_line
+
+            output_lines.append(line)
     else:
         output_lines = output.splitlines()
-
-    output_lines = (
-        list(filter(lambda line: not debug_regex.match(line), output.splitlines()))
-        if ignore_debug
-        else output.splitlines()
-    )
 
     differ = difflib.Differ()
     diff = list(

@@ -1,3 +1,8 @@
+# 0.1.2
+
+- Ignore inline debug "(dbg...)" or "(debug...)"
+- Use pyproject.toml instead of setup.py
+
 # 0.1.1
 
 - Ignore debug lines (lines starting with debug or dbg)
