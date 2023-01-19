@@ -1,9 +1,7 @@
 # kattest - A kattis solution tester
 
-This is a simple that program that aims to compile and run kattis problems and
-tests them with both local and given input and output. It also works with input
-files without a corresponding output file, but then it can obviously not verify
-if the output is correct.
+This is a simple program that aims to compile, run and test kattis problems
+against local and sample input and output.
 
 ## Demo
 
@@ -18,6 +16,7 @@ if the output is correct.
 ## Features
 
 - Automatically downloads sample input and output
+- Automatically finds local sample input and output
 - Automatically compiles your source code and runs it with custom and sample
   input and output
 
@@ -26,8 +25,8 @@ The current supported languages are:
 - C++
 - Rust
 - Python
-  >**Note**
-  > Runs with `pypy3`, for kattis compatibility
+  > **Note**
+  > Runs with `pypy3` for kattis compatibility
 - Haskell
 
 Adding more languages are left as an exercise for the reader.
