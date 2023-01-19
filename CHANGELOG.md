@@ -3,6 +3,7 @@
 - Ignore inline debug "(dbg...)" or "(debug...)"
 - Use pyproject.toml instead of setup.py
 - Add flake8 configuration
+- Bugfix: Fix stuck when compiling with large outputs because it can't flush
 
 # 0.1.1
 

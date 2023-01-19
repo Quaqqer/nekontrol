@@ -79,10 +79,11 @@ def compile(file: str, language: str, output_file: str, color: bool) -> None | s
 
 def compile_generic(cmdline: list[str]) -> None | str:
     p = subprocess.Popen(cmdline, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    assert p.stderr
+    _, errbytes = p.communicate()
     return_code = p.wait()
 
     if return_code == 0:
         return
     else:
-        assert p.stderr
-        return p.stderr.read().decode("utf-8")
+        return errbytes.decode("utf-8")
