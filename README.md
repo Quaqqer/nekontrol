@@ -5,13 +5,7 @@ against local and sample input and output.
 
 ## Demo
 
-### Successful run
-
-![Demo of a succesful run](./res/demo1.svg)
-
-### Incorrect output
-
-![Demo of an unsuccessful run](./res/demo2.svg)
+![Demo](./res/demo.svg)
 
 ## Features
 
@@ -25,14 +19,14 @@ against local and sample input and output.
 
 The current supported languages are:
 
-- C++
-- Rust
-- Python
+- C++ (requires `c++` in your path)
+- Rust (requirest `rustc` in your path)
+- Python (requires `pypy3` in your path)
   > **Note**
   > Runs with `pypy3` for kattis compatibility
-- Haskell
+- Haskell (requires `ghc` in your path)
 
-Adding more languages are left as an exercise for the reader.
+Adding more languages is left as an exercise for the reader.
 
 ## Usage
 
