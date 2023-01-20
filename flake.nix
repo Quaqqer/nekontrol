@@ -18,7 +18,7 @@
         nekontrol = (pkgs.callPackage ({ python310, installShellFiles }:
           python310.pkgs.buildPythonApplication rec {
             pname = "nekontrol";
-            version = "0.1.2";
+            version = "0.1.3";
 
             src = ./.;
             format = "pyproject";
