@@ -4,4 +4,4 @@ let
     projectDir = ./.;
     editablePackageSources = { nekontrol = ./src; };
   };
-in nekontrolEnv.env.overrideAttrs (oldAttrs: { buildInputs = [ ]; })
+in nekontrolEnv.env.overrideAttrs (oldAttrs: { buildInputs = [ pkgs.poetry ]; })
