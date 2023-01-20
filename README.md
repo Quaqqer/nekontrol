@@ -5,7 +5,7 @@ against local and sample input and output.
 
 ## Demo
 
-![Demo](./res/demo.svg)
+![Demo](https://raw.githubusercontent.com/Quaqqer/nekontrol/main/res/demo.svg)
 
 ## Features
 
