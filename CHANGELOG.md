@@ -1,3 +1,7 @@
+# 0.1.3
+
+- Use poetry instead of setuptools
+
 # 0.1.2
 
 - Ignore inline debug "(dbg...)" or "(debug...)"
