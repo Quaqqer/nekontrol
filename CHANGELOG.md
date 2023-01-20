@@ -1,3 +1,7 @@
+# 0.1.4
+
+- Bump version number because pypi is annoying
+
 # 0.1.3
 
 - Use poetry instead of setuptools
