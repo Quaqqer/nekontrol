@@ -23,9 +23,9 @@
             src = ./.;
             format = "pyproject";
 
-            nativeBuildInputs = [ installShellFiles python310.pkgs.setuptools ];
+            nativeBuildInputs = [ installShellFiles ];
 
-            propagatedBuildInputs = pythonDeps python310.pkgs;
+            propagatedBuildInputs = pythonDeps python310.pkgs ++ [python310.pkgs.poetry-core];
             postInstall = ''
               installShellCompletion --cmd nekontrol \
                 --bash <(_NEKONTROL_COMPLETE=bash_source $out/bin/nekontrol) \
@@ -38,6 +38,8 @@
           nativeBuildInputs = [ pkgs.bashInteractive ];
           buildInputs = with pkgs; [
             (python310.withPackages pythonDeps)
+
+            poetry
 
             nekontrol
           ];

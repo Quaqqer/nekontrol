@@ -45,12 +45,17 @@ and run!
 > **Note**
 > Multiple support files are not supported as of yet
 
-## Installation
+## Requirements
+
+- The requirements of this program is only having python 3.10 or newer as well
+  pip
+
+## Install or update
+
+To install or update, run the following.
 
 ```sh
-git clone https://github.com/Quaqqer/nekontrol.git
-cd nekontrol
-pip install .
+pip install -U nekontrol
 ```
 
 Now it should hopefully work, enjoy!
