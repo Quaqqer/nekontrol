@@ -43,12 +43,14 @@ and run!
   etc. where `<filename>` comes from `nk <filename>.cpp` for instance.
 
 > **Note**
-> Multiple support files are not supported as of yet
+> Multiple files are not supported as of yet
 
 ## Requirements
 
 - The requirements of this program is only having python 3.10 or newer as well
   pip
+- A half decent terminal, almost anything other than cmd.exe on windows will
+  work
 
 ## Install or update
 
@@ -62,8 +64,8 @@ Now it should hopefully work, enjoy!
 
 ### Nix
 
-There is also a flake for Nix users, but if you use Nix I trust you know how to
-use flakes.
+There is a flake for Nix users, but if you use Nix I trust you know how to use
+flakes.
 
 ## Other
 
