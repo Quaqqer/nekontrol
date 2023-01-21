@@ -1,3 +1,8 @@
+# 0.1.5
+
+- Bugfix: No output nor input is shown when running without an ans-file
+- Bugfix: No local test data is found when running outside of cwd
+
 # 0.1.4
 
 - Bump version number because pypi is annoying
