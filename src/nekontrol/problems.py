@@ -67,18 +67,20 @@ def problem_sample_inputs_outputs(
 
 
 def local_inputs_outputs(dir: str, name: str) -> list[ProblemIO]:
-    files = [path.join(dir, d) for d in os.listdir(dir or ".")]
+    file_names = [fn for fn in os.listdir(dir or ".")]
 
     candidates = [
-        (file, m)
-        for file in files
-        if (m := re.match("^" + re.escape(name) + r"((?:\.\d+)?)\.in", file))
+        (fn, m)
+        for fn in file_names
+        if (m := re.match("^" + re.escape(name) + r"((?:\.\d+)?)\.in", fn))
     ]
 
     ins_and_outs: list[ProblemIO] = [
         (
-            in_,
-            out if path.isfile(out := (name + m.group(1) + ".ans")) else None,
+            path.join(dir, in_),
+            out
+            if path.isfile(out := path.join(dir, name + m.group(1) + ".ans"))
+            else None,
             "local",
         )
         for (in_, m) in candidates

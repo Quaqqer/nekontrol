@@ -48,12 +48,6 @@ def run(
 
                 if isinstance(diff, str):
                     print(diff)
-                elif expected_file is None:
-                    print(c("Input:", "yellow"))
-                    with open(input_file, "r") as ifile:
-                        print(util.indented(ifile.read()))
-                    print(c("Got output:", "yellow"))
-                    print(util.indented(stdout))
                 elif diff is True:
                     print(c("NOTE: The output contained debug lines", "yellow"))
 
@@ -68,3 +62,11 @@ def run(
 
                     if stderr:
                         print(util.indented(stderr))
+        else:
+            s.stop()
+
+            print(c("Input:", "yellow"))
+            with open(input_file, "r") as ifile:
+                print(util.indented(ifile.read()))
+            print(c("Got output:", "yellow"))
+            print(util.indented(stdout))
