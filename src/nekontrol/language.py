@@ -1,6 +1,8 @@
 import subprocess
 import tempfile
 
+from . import config
+
 
 def extension_lang(extension: str) -> str | None:
 
@@ -30,48 +32,51 @@ def script_cmdline(lang: str, file_path: str) -> list[str]:
             raise NotImplemented("Unknown language")
 
 
-def compile(file: str, language: str, output_file: str, color: bool) -> None | str:
+def compile(
+    file: str, language: str, output_file: str, color: bool, cfg: config.Config
+) -> None | str:
     match language:
         case "haskell":
             with tempfile.TemporaryDirectory() as tempdir:
-                return compile_generic(
-                    [
-                        "ghc",
-                        "-outputdir",
-                        tempdir,
-                        file,
-                        "-o",
-                        output_file,
-                    ]
-                )
+                cmdline = [
+                    "ghc",
+                    "-outputdir",
+                    tempdir,
+                    file,
+                    "-o",
+                    output_file,
+                ]
+                return compile_generic(cmdline)
 
         case "c++":
-            return compile_generic(
-                [
-                    "c++",
-                    "--std=c++17",
-                    file,
-                    "-o",
-                    output_file,
-                    f"-fdiagnostics-color={'always' if color else 'never'}",
-                ]
-            )
+            cmdline = [
+                "c++",
+                "--std=c++17",
+                file,
+                "-o",
+                output_file,
+                f"-fdiagnostics-color={'always' if color else 'never'}",
+            ]
+
+            if cfg.cpp_libs_dir is not None:
+                cmdline += [f"-I{cfg.cpp_libs_dir}"]
+
+            return compile_generic(cmdline)
 
         case "rust":
-            return compile_generic(
-                [
-                    "rustc",
-                    "-O",
-                    "--crate-type",
-                    "bin",
-                    "--edition=2018",
-                    file,
-                    "--color",
-                    "always" if color else "never",
-                    "-o",
-                    output_file,
-                ]
-            )
+            cmdline = [
+                "rustc",
+                "-O",
+                "--crate-type",
+                "bin",
+                "--edition=2018",
+                file,
+                "--color",
+                "always" if color else "never",
+                "-o",
+                output_file,
+            ]
+            return compile_generic(cmdline)
 
         case _:
             raise NotImplemented("Unknown language")

@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from .. import language, problems, util
+from .. import config, language, problems, util
 from . import run
 from .spinner import Spinner
 
@@ -30,6 +30,8 @@ def cli(file_path: str, problem: str | None, color: bool):
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
 
+    cfg = config.load_config(file_dir)
+
     if problem is None:
         print(f"No problem name specified, guessing '{file_base}'")
         problem = file_base
@@ -52,7 +54,9 @@ def cli(file_path: str, problem: str | None, color: bool):
     if language.is_compiled(lang):
         with util.TempFileName() as executable:
             with Spinner(f"Compiling {file_path} ") as spinner:
-                compile_errors = language.compile(file_path, lang, executable, color)
+                compile_errors = language.compile(
+                    file_path, lang, executable, color, cfg
+                )
                 spinner.ok(compile_errors is None)
 
             if compile_errors is not None:
