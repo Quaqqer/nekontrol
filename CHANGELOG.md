@@ -1,3 +1,7 @@
+# 0.1.6
+
+- Allow for disabling diff, showing only the normal output
+
 # 0.1.5
 
 - Bugfix: No output nor input is shown when running without an ans-file

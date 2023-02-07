@@ -14,6 +14,7 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
+@click.option("--diff/--no-diff", default=True)
 @click.option(
     "-c",
     "--color",
@@ -21,7 +22,7 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
     default=os.isatty(sys.stdout.fileno()),
     help="If it should output with color or not",
 )
-def cli(file_path: str, problem: str | None, color: bool):
+def cli(file_path: str, problem: str | None, color: bool, diff: bool):
     """nekontrol - Control your kattis solutions.
 
     Run FILE and test against sample and local test data.
@@ -63,7 +64,7 @@ def cli(file_path: str, problem: str | None, color: bool):
                 print(compile_errors)
                 exit(1)
 
-            run.run_all(file_base, [executable], ios, color)
+            run.run_all(file_base, [executable], ios, color, diff)
     else:
         cmdline = language.script_cmdline(lang, file_path)
-        run.run_all(file_base, cmdline, ios, color)
+        run.run_all(file_base, cmdline, ios, color, diff)

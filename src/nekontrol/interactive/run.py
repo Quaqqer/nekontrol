@@ -8,10 +8,14 @@ from . import spinner
 
 
 def run_all(
-    name: str, cmdline: list[str], ios: list[tuple[str, str | None, str]], color: bool
+    name: str,
+    cmdline: list[str],
+    ios: list[tuple[str, str | None, str]],
+    color: bool,
+    diff: bool,
 ):
     for i, o, from_ in ios:
-        run(name, cmdline, i, o, from_, color)
+        run(name, cmdline, i, o, from_, color, diff)
 
 
 def run(
@@ -21,6 +25,7 @@ def run(
     expected_file: str | None,
     from_: str,
     color: bool,
+    enable_diff: bool
 ):
     c = util.cw(color)
 
@@ -38,7 +43,7 @@ def run(
 
         diff = None
 
-        if expected_file is not None:
+        if enable_diff and expected_file is not None:
             with open(expected_file, "r") as expected:
                 diff = compare.compare_outputs(
                     stdout, expected.read(), input_file, os.isatty(sys.stdin.fileno())
