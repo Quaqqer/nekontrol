@@ -1,3 +1,9 @@
+# 0.2.0
+
+- Rework code to be cleaner
+- Add a stopwatch to time how long it took to run
+- Add support for lua
+
 # 0.1.7
 
 - Run with multiple python versions

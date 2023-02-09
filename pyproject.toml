@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nekontrol"
-version = "0.1.7"
+version = "0.2.0"
 description = "A program for testing kattis solutions with input and output."
 authors = [
     "Emanuel S <emanuel@empa.xyz>",
