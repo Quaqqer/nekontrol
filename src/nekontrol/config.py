@@ -1,5 +1,5 @@
-import sys
 import os.path as path
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -10,6 +10,7 @@ class Config:
     extra_flags: dict[str, list[str]] | None = None
     color: bool = sys.stdout.isatty()
     diff: bool = True
+    ignore_debug: bool = True
 
 
 def find_config(dir: str) -> str | None:

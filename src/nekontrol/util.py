@@ -1,5 +1,6 @@
 import os
 import tempfile
+from . import config
 
 import termcolor
 

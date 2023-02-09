@@ -1,13 +1,10 @@
-import os
 import os.path as path
-import sys
 
 import click
 
 from .. import language, problems, util
 from ..config import exec_config
 from . import run
-from .spinner import Spinner
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
@@ -15,15 +12,16 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
-@click.option("--diff/--no-diff", default=None)
-@click.option(
-    "-c",
-    "--color",
-    type=bool,
-    default=os.isatty(sys.stdout.fileno()),
-    help="If it should output with color or not",
-)
-def cli(file_path: str, problem: str | None, color: bool | None, diff: bool):
+@click.option("-d", "--diff", type=bool)
+@click.option("-c", "--color", type=bool)
+@click.option("--ignore-debug", type=bool)
+def cli(
+    file_path: str,
+    problem: str | None,
+    color: bool | None,
+    diff: bool | None,
+    ignore_debug: bool | None,
+):
     """nekontrol - Control your kattis solutions.
 
     Run FILE and test against sample and local test data.
@@ -33,6 +31,12 @@ def cli(file_path: str, problem: str | None, color: bool | None, diff: bool):
     file_base, extension = path.splitext(file_name)
 
     config = exec_config(file_dir)
+    if color is not None:
+        config.color = color
+    if diff is not None:
+        config.diff = diff
+    if ignore_debug is not None:
+        config.ignore_debug = ignore_debug
 
     c = util.cw(config.color)
 

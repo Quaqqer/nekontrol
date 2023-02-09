@@ -1,8 +1,3 @@
-import os
-import os.path as path
-import subprocess
-import sys
-
 from .. import compare, util
 from ..config import Config
 from ..language import Language
@@ -10,27 +5,19 @@ from ..problems import ProblemIO
 from . import spinner
 
 
-def run(
-    name: str,
-    lang: Language,
-    io: ProblemIO,
-    config: Config
-):
+def run(name: str, lang: Language, io: ProblemIO, config: Config):
     c = util.cw(config.color)
 
     with spinner.Spinner(
         f"Running {name} with {io.from_} input {io.input_name()} "
     ) as s:
-        with open(io.i, "r") as input_file:
-            exit_code, stdout, stderr = lang.run(io.i)
+        exit_code, stdout, stderr = lang.run(io.i)
 
         diff = None
 
         if config.diff and io.o is not None:
             with open(io.o, "r") as expected:
-                diff = compare.compare_outputs(
-                    stdout, expected.read(), io.i, os.isatty(sys.stdin.fileno())
-                )
+                diff = compare.compare_outputs(stdout, expected.read(), io.i, config)
 
                 s.stop(isinstance(diff, bool))
 

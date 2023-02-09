@@ -4,19 +4,20 @@ import re
 import termcolor
 
 from . import util
+from .config import Config
 
 debug_regex = re.compile("^(?:debug|dbg)", re.IGNORECASE)
 inline_debug_regex = re.compile(r"\((?:dbg|debug)[^)]*\)", re.IGNORECASE)
 
 
 def compare_outputs(
-    output: str, expected_output: str, input_file: str, colors: bool, ignore_debug=True
+        output: str, expected_output: str, input_file: str, config: Config
 ) -> str | bool:
-    c = util.cw(colors)
+    c = util.cw(config.color)
 
     found_debug = False
 
-    if ignore_debug:
+    if config.ignore_debug:
         output_lines = []
         for line in output.splitlines():
             if debug_regex.match(line):
@@ -52,7 +53,7 @@ def compare_outputs(
                 + "\n"
                 + c("Diff:", "yellow")
                 + "\n"
-                + "\n".join(color_diff(diff) if colors else diff)
+                + "\n".join(color_diff(diff) if config.color else diff)
             )
 
 
