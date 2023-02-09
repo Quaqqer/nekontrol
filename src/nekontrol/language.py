@@ -69,6 +69,11 @@ class Lua(InterpretedLanguage):
     def bins(self):
         return ["lua", "luajit"]
 
+class JSNode(InterpretedLanguage):
+    @property
+    def bins(self):
+        return ["node"]
+
 
 class CompiledLanguage(Language):
     @property
@@ -175,6 +180,8 @@ def get_lang(source_file: str, config: Config) -> Language | None:
             return Rust(source_file, config)
         case ".lua":
             return Lua(source_file, config)
+        case ".js":
+            return JSNode(source_file, config)
         case _:
             return None
 

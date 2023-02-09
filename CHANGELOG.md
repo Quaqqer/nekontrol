@@ -2,7 +2,7 @@
 
 - Rework code to be cleaner
 - Add a stopwatch to time how long it took to run
-- Add support for lua
+- Add support for lua and javascript (node)
 
 # 0.1.7
 

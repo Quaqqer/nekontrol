@@ -27,6 +27,8 @@ The current supported languages are:
   > your path. If you don't you may encounter runtime errors in kattis, because
   > of differing python versions.
 - Haskell (requires `ghc` in your path)
+- Lua (requires `lua` in your path)
+- JavaScript (Node) (requires `node` in your path)
 
 Adding more languages is left as an exercise for the reader.
 
