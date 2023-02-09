@@ -22,13 +22,15 @@ The current supported languages are:
 - C++ (requires `c++` in your path)
 - Rust (requirest `rustc` in your path)
 - Python (requires python in your path)
-  > **Note**
-  > For compatibility reasons it is recommended to have pypy 3.8 installed in
-  > your path. If you don't you may encounter runtime errors in kattis, because
-  > of differing python versions.
 - Haskell (requires `ghc` in your path)
 - Lua (requires `lua` in your path)
 - JavaScript (Node) (requires `node` in your path)
+
+> **Note**
+> Nekontrol will try to find a way to run your program, but it is not guranteed
+> that the program it uses matches the version that kattis has. For instance
+> kattis runs python with pypy 3.8. Nekontrol will try to run it with pypy 3.8,
+> but will fall back to other versions if it cannot be found.
 
 Adding more languages is left as an exercise for the reader.
 
