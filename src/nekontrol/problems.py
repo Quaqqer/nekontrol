@@ -3,14 +3,15 @@ import os.path as path
 import re
 import shutil
 import tempfile
-from typing import Literal
 import zipfile
 from dataclasses import dataclass
+from typing import Literal
 
 import appdirs
 import natsort
 import requests
 
+from .config import Config
 from .interactive import spinner
 
 
@@ -32,7 +33,7 @@ def problem_dir(problem: str) -> str:
     return path.join(appdirs.user_cache_dir("nekontrol"), "problems", problem)
 
 
-def download_tests(problem: str) -> bool:
+def download_tests(problem: str, config: Config) -> bool:
     url = f"https://open.kattis.com/problems/{problem}/file/statement/samples.zip"
 
     problem_cache_dir = problem_dir(problem)
@@ -41,7 +42,9 @@ def download_tests(problem: str) -> bool:
         print(f"Using cached sample data for problem {problem}")
         return True
     else:
-        with spinner.Spinner(f"Downloading sample data for problem {problem} ") as s:
+        with spinner.Spinner(
+            f"Downloading sample data for problem {problem} ", color=config.color
+        ) as s:
             with requests.get(url, stream=True) as response:
                 if not response.ok:
                     s.fail()
@@ -56,10 +59,10 @@ def download_tests(problem: str) -> bool:
 
 
 def problem_sample_inputs_outputs(
-    problem: str,
+    problem: str, config: Config
 ) -> list[ProblemIO] | None:
     problem_cache_dir = problem_dir(problem)
-    downloaded = download_tests(problem)
+    downloaded = download_tests(problem, config)
 
     if not downloaded:
         return None

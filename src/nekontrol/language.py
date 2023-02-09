@@ -76,7 +76,7 @@ class CompiledLanguage(Language):
         raise NotImplementedError()
 
     def prepare(self):
-        with Spinner(f"Compiling {self.source_file} ") as s:
+        with Spinner(f"Compiling {self.source_file} ", color=self.config.color) as s:
             self.compiled_output = tempfile.mktemp()
             exit_code, stderr = self.compile()
 

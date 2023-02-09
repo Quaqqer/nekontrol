@@ -45,7 +45,7 @@ def cli(
         problem = file_base
 
     local_ios = problems.local_inputs_outputs(file_dir, file_base)
-    sample_ios = problems.problem_sample_inputs_outputs(problem)
+    sample_ios = problems.problem_sample_inputs_outputs(problem, config)
     ios = local_ios + (sample_ios or [])
 
     if len(ios) == 0:

@@ -1,3 +1,5 @@
+import time
+
 from .. import compare, util
 from ..config import Config
 from ..language import Language
@@ -9,9 +11,22 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
     c = util.cw(config.color)
 
     with spinner.Spinner(
-        f"Running {name} with {io.from_} input {io.input_name()} "
+        f"Running {name} with {io.from_} input {io.input_name()} ",
+        color=config.color,
+        newline=False,
     ) as s:
+        start = time.time()
         exit_code, stdout, stderr = lang.run(io.i)
+        finish = time.time()
+        duration = finish - start
+
+        if duration < 1:
+            time_color = "green"
+        elif duration < 3:
+            time_color = "yellow"
+        else:
+            time_color = "red"
+        time_msg = c(f" ⏱  {duration:.3} s", time_color)
 
         diff = None
 
@@ -20,6 +35,7 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                 diff = compare.compare_outputs(stdout, expected.read(), io.i, config)
 
                 s.stop(isinstance(diff, bool))
+                print(time_msg)
 
                 if isinstance(diff, str):
                     print(diff)
@@ -39,6 +55,7 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                         print(util.indented(stderr))
         else:
             s.stop()
+            print(time_msg)
 
             print(c("Input:", "yellow"))
             with open(io.i, "r") as ifile:
