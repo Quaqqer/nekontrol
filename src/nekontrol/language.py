@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import tempfile
 
@@ -26,10 +27,33 @@ def is_compiled(lang: str):
 def script_cmdline(lang: str, file_path: str) -> list[str]:
     match lang:
         case "python":
-            return ["pypy3", file_path]
+            python_bins = [
+                "pypy38",
+                "pypy3.8",
+                "pypy3",
+                "python38",
+                "python3.8",
+                "python3",
+                "python",
+            ]
+
+            bin = find_bin(python_bins)
+
+            if bin is None:
+                raise Exception(f"No python binary found, expected one from the list: ")
+
+            return [bin, file_path]
 
         case _:
             raise NotImplemented("Unknown language")
+
+
+def find_bin(options: list[str]) -> str | None:
+    for option in options:
+        path = shutil.which(option)
+        if path is not None:
+            return path
+    return None
 
 
 def compile(

@@ -21,9 +21,11 @@ The current supported languages are:
 
 - C++ (requires `c++` in your path)
 - Rust (requirest `rustc` in your path)
-- Python (requires `pypy3` in your path)
+- Python (requires python in your path)
   > **Note**
-  > Runs with `pypy3` for kattis compatibility
+  > For compatibility reasons it is recommended to have pypy 3.8 installed in
+  > your path. If you don't you may encounter runtime errors in kattis, because
+  > of differing python versions.
 - Haskell (requires `ghc` in your path)
 
 Adding more languages is left as an exercise for the reader.

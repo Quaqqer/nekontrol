@@ -1,6 +1,11 @@
+# 0.1.7
+
+- Run with multiple python versions
+
 # 0.1.6
 
 - Allow for disabling diff, showing only the normal output
+- Add support for a config file
 
 # 0.1.5
 
