@@ -4,7 +4,11 @@ import subprocess
 import tempfile
 from os import path
 
+from click import ClickException
+
+from . import util
 from .config import Config
+from .interactive.spinner import Spinner
 
 
 class Language:
@@ -72,15 +76,33 @@ class CompiledLanguage(Language):
         raise NotImplementedError()
 
     def prepare(self):
-        self.compiled_output = tempfile.mktemp()
+        with Spinner(f"Compiling {self.source_file} ") as s:
+            self.compiled_output = tempfile.mktemp()
+            exit_code, stderr = self.compile()
+
+            if exit_code == 0:
+                s.stop(True)
+            else:
+                s.stop(False)
+                err_msg = f"Compilation exited with code {exit_code}" + (
+                    " and stderr:\n" + util.indented(stderr) if stderr else ""
+                )
+                raise ClickException(err_msg)
 
     def cleanup(self):
-        os.remove(self.compiled_output)
+        if path.exists(self.compiled_output):
+            os.remove(self.compiled_output)
 
     def run(self, input_file: str):
         return generic_run([self.compiled_output], input_file)
 
-    def compile(self) -> None | tuple[int, str]:
+    def compile(self) -> tuple[int, str]:
+        """Compile the file.
+
+        Returns:
+            Nothing if successful, the exit code and the stderr if the exit
+            code was non-0.
+        """
         p = subprocess.Popen(
             self.cmdline, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE
         )

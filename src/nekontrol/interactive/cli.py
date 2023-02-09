@@ -4,7 +4,8 @@ import sys
 
 import click
 
-from .. import config, language, problems, util
+from .. import language, problems, util
+from ..config import exec_config
 from . import run
 from .spinner import Spinner
 
@@ -14,7 +15,7 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
-@click.option("--diff/--no-diff", default=True)
+@click.option("--diff/--no-diff", default=None)
 @click.option(
     "-c",
     "--color",
@@ -22,7 +23,7 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
     default=os.isatty(sys.stdout.fileno()),
     help="If it should output with color or not",
 )
-def cli(file_path: str, problem: str | None, color: bool, diff: bool):
+def cli(file_path: str, problem: str | None, color: bool | None, diff: bool):
     """nekontrol - Control your kattis solutions.
 
     Run FILE and test against sample and local test data.
@@ -31,9 +32,9 @@ def cli(file_path: str, problem: str | None, color: bool, diff: bool):
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
 
-    cfg = config.exec_config(file_dir)
+    config = exec_config(file_dir)
 
-    c = util.cw(cfg.color)
+    c = util.cw(config.color)
 
     if problem is None:
         print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
@@ -46,7 +47,7 @@ def cli(file_path: str, problem: str | None, color: bool, diff: bool):
     if len(ios) == 0:
         raise click.ClickException(f"Found no inputs to run for problem {problem}")
 
-    lang = language.get_lang(file_path, cfg)
+    lang = language.get_lang(file_path, config)
 
     if lang is None:
         raise click.ClickException(
@@ -54,10 +55,5 @@ def cli(file_path: str, problem: str | None, color: bool, diff: bool):
         )
 
     with lang:
-        for input_file in [i for i, o, from_ in ios]:
-            exit_code, stdout, stderr = lang.run(input_file)
-
-            if exit_code == 0:
-                pass
-            else:
-                pass
+        for io in ios:
+            run.run(file_name, lang, io, config)

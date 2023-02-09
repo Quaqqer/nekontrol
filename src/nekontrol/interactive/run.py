@@ -4,49 +4,32 @@ import subprocess
 import sys
 
 from .. import compare, util
+from ..config import Config
+from ..language import Language
+from ..problems import ProblemIO
 from . import spinner
-
-
-def run_all(
-    name: str,
-    cmdline: list[str],
-    ios: list[tuple[str, str | None, str]],
-    color: bool,
-    diff: bool,
-):
-    for i, o, from_ in ios:
-        run(name, cmdline, i, o, from_, color, diff)
 
 
 def run(
     name: str,
-    cmdline: list[str],
-    input_file: str,
-    expected_file: str | None,
-    from_: str,
-    color: bool,
-    enable_diff: bool
+    lang: Language,
+    io: ProblemIO,
+    config: Config
 ):
-    c = util.cw(color)
+    c = util.cw(config.color)
 
     with spinner.Spinner(
-        f"Running {name} with {from_} input {path.basename(input_file)} "
+        f"Running {name} with {io.from_} input {io.input_name()} "
     ) as s:
-        with open(input_file, "r") as input:
-            p = subprocess.Popen(
-                cmdline, stdin=input, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-
-            byte_streams = p.communicate()
-            exit_code = p.returncode
-            stdout, stderr = [s.decode("utf-8") for s in byte_streams]
+        with open(io.i, "r") as input_file:
+            exit_code, stdout, stderr = lang.run(io.i)
 
         diff = None
 
-        if enable_diff and expected_file is not None:
-            with open(expected_file, "r") as expected:
+        if config.diff and io.o is not None:
+            with open(io.o, "r") as expected:
                 diff = compare.compare_outputs(
-                    stdout, expected.read(), input_file, os.isatty(sys.stdin.fileno())
+                    stdout, expected.read(), io.i, os.isatty(sys.stdin.fileno())
                 )
 
                 s.stop(isinstance(diff, bool))
@@ -71,7 +54,7 @@ def run(
             s.stop()
 
             print(c("Input:", "yellow"))
-            with open(input_file, "r") as ifile:
+            with open(io.i, "r") as ifile:
                 print(util.indented(ifile.read()))
             print(c("Got output:", "yellow"))
             print(util.indented(stdout))

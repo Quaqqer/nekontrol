@@ -3,7 +3,9 @@ import os.path as path
 import re
 import shutil
 import tempfile
+from typing import Literal
 import zipfile
+from dataclasses import dataclass
 
 import appdirs
 import natsort
@@ -11,7 +13,19 @@ import requests
 
 from .interactive import spinner
 
-ProblemIO = tuple[str, str | None, str]
+
+@dataclass
+class ProblemIO:
+    """
+    Stores the paths to input, output and a source name.
+    """
+
+    i: str
+    o: str | None
+    from_: Literal["sample"] | Literal["local"]
+
+    def input_name(self):
+        return path.basename(self.i)
 
 
 def problem_dir(problem: str) -> str:
@@ -43,7 +57,7 @@ def download_tests(problem: str) -> bool:
 
 def problem_sample_inputs_outputs(
     problem: str,
-) -> list[tuple[str, str | None, str]] | None:
+) -> list[ProblemIO] | None:
     problem_cache_dir = problem_dir(problem)
     downloaded = download_tests(problem)
 
@@ -63,7 +77,7 @@ def problem_sample_inputs_outputs(
 
     ins_and_outs = [(in_file, get_out_file(in_file), "sample") for in_file in in_files]
 
-    return sorted_problems(ins_and_outs)
+    return sorted_problems([ProblemIO(*iof) for iof in ins_and_outs])
 
 
 def local_inputs_outputs(dir: str, name: str) -> list[ProblemIO]:
@@ -76,7 +90,7 @@ def local_inputs_outputs(dir: str, name: str) -> list[ProblemIO]:
     ]
 
     ins_and_outs: list[ProblemIO] = [
-        (
+        ProblemIO(
             path.join(dir, in_),
             out
             if path.isfile(out := path.join(dir, name + m.group(1) + ".ans"))
@@ -92,4 +106,4 @@ def local_inputs_outputs(dir: str, name: str) -> list[ProblemIO]:
 def sorted_problems(
     problems: list[ProblemIO],
 ) -> list[ProblemIO]:
-    return natsort.natsorted(problems, key=lambda tup: tup[0])
+    return natsort.natsorted(problems, key=lambda p: p.i)
