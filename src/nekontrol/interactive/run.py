@@ -21,12 +21,12 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
         duration = finish - start
 
         if duration < 1:
-            time_color = "green"
+            time_color_args = dict(color="black", on_color="on_green")
         elif duration < 3:
-            time_color = "yellow"
+            time_color_args = dict(color="black", on_color="on_yellow")
         else:
-            time_color = "red"
-        time_msg = c(f" ⏱  {duration:.3} s", time_color)
+            time_color_args = dict(color="black", on_color="on_red")
+        time_msg = " " + c(f" ⏱  {duration:.3} s", **time_color_args)
 
         diff = None
 

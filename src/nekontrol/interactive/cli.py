@@ -14,6 +14,7 @@ executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_oka
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
 @click.option("-d", "--diff", type=bool)
 @click.option("-c", "--color", type=bool)
+@click.option("-v", "--verbose", type=bool)
 @click.option("--ignore-debug", type=bool)
 def cli(
     file_path: str,
@@ -21,6 +22,7 @@ def cli(
     color: bool | None,
     diff: bool | None,
     ignore_debug: bool | None,
+    verbose: bool | None,
 ):
     """nekontrol - Control your kattis solutions.
 
@@ -37,11 +39,14 @@ def cli(
         config.diff = diff
     if ignore_debug is not None:
         config.ignore_debug = ignore_debug
+    if verbose is not None:
+        config.verbose = verbose
 
     c = util.cw(config.color)
 
     if problem is None:
-        print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
+        if config.verbose:
+            print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
         problem = file_base
 
     local_ios = problems.local_inputs_outputs(file_dir, file_base)

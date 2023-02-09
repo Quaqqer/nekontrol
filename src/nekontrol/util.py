@@ -28,9 +28,9 @@ def indented(s: str) -> str:
 def cw(color: bool):
     """Create a termcolor.colored wrapper that will or will not color the string."""
 
-    def inner(s, *args):
+    def inner(s, *args, **kwargs):
         if color:
-            return termcolor.colored(s, *args)
+            return termcolor.colored(s, *args, **kwargs)
         else:
             return s
 

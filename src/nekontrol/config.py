@@ -11,6 +11,7 @@ class Config:
     color: bool = sys.stdout.isatty()
     diff: bool = True
     ignore_debug: bool = True
+    verbose: bool = False
 
 
 def find_config(dir: str) -> str | None:
