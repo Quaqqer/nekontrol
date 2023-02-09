@@ -1,3 +1,4 @@
+import sys
 import os.path as path
 from dataclasses import dataclass
 from pathlib import Path
@@ -6,6 +7,9 @@ from pathlib import Path
 @dataclass
 class Config:
     cpp_libs_dir: str | None = None
+    extra_flags: dict[str, list[str]] | None = None
+    color: bool = sys.stdout.isatty()
+    diff: bool = True
 
 
 def find_config(dir: str) -> str | None:
@@ -20,7 +24,7 @@ def find_config(dir: str) -> str | None:
     return path.join(p, ".nkconfig.py")
 
 
-def load_config(dir: str) -> Config:
+def exec_config(dir: str) -> Config:
     cfg_path = find_config(dir)
 
     cfg = Config()

@@ -31,10 +31,12 @@ def cli(file_path: str, problem: str | None, color: bool, diff: bool):
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
 
-    cfg = config.load_config(file_dir)
+    cfg = config.exec_config(file_dir)
+
+    c = util.cw(cfg.color)
 
     if problem is None:
-        print(f"No problem name specified, guessing '{file_base}'")
+        print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
         problem = file_base
 
     local_ios = problems.local_inputs_outputs(file_dir, file_base)
@@ -42,29 +44,20 @@ def cli(file_path: str, problem: str | None, color: bool, diff: bool):
     ios = local_ios + (sample_ios or [])
 
     if len(ios) == 0:
-        print(f"Found no inputs to run for problem {problem}")
-        exit()
+        raise click.ClickException(f"Found no inputs to run for problem {problem}")
 
-    lang = language.extension_lang(extension)
+    lang = language.get_lang(file_path, cfg)
 
     if lang is None:
         raise click.ClickException(
             f"Language for file extension {extension} is not implemented."
         )
 
-    if language.is_compiled(lang):
-        with util.TempFileName() as executable:
-            with Spinner(f"Compiling {file_path} ") as spinner:
-                compile_errors = language.compile(
-                    file_path, lang, executable, color, cfg
-                )
-                spinner.ok(compile_errors is None)
+    with lang:
+        for input_file in [i for i, o, from_ in ios]:
+            exit_code, stdout, stderr = lang.run(input_file)
 
-            if compile_errors is not None:
-                print(compile_errors)
-                exit(1)
-
-            run.run_all(file_base, [executable], ios, color, diff)
-    else:
-        cmdline = language.script_cmdline(lang, file_path)
-        run.run_all(file_base, cmdline, ios, color, diff)
+            if exit_code == 0:
+                pass
+            else:
+                pass

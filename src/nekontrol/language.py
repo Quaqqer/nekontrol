@@ -1,51 +1,174 @@
+import os
 import shutil
 import subprocess
 import tempfile
+from os import path
 
-from . import config
+from .config import Config
 
 
-def extension_lang(extension: str) -> str | None:
+class Language:
+    def __init__(self, source_file: str, config: Config):
+        self.source_file = source_file
+        self.config = config
 
-    match extension:
+    def run(self, input_file: str) -> tuple[int, str, str]:
+        raise NotImplementedError()
+
+    def prepare(self):
+        pass
+
+    def cleanup(self):
+        pass
+
+    def __enter__(self):
+        self.prepare()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.cleanup()
+
+
+class InterpretedLanguage(Language):
+    @property
+    def bins(self) -> list[str]:
+        raise NotImplementedError()
+
+    def __init__(self, source_file: str, config: Config):
+        super().__init__(source_file, config)
+        bin = find_bin(self.bins)
+
+        if bin is None:
+            raise Exception(f"Binary for language not found, needs one of {self.bins}")
+
+        self.bin = bin
+
+    def run(self, input_file: str):
+        return generic_run([self.bin, self.source_file], input_file)
+
+
+class Python(InterpretedLanguage):
+    @property
+    def bins(self):
+        return [
+            "pypy38",
+            "pypy3.8",
+            "pypy3",
+            "python38",
+            "python3.8",
+            "python3",
+            "python",
+        ]
+
+
+class Lua(InterpretedLanguage):
+    @property
+    def bins(self):
+        return ["lua", "luajit"]
+
+
+class CompiledLanguage(Language):
+    @property
+    def cmdline(self) -> list[str]:
+        raise NotImplementedError()
+
+    def prepare(self):
+        self.compiled_output = tempfile.mktemp()
+
+    def cleanup(self):
+        os.remove(self.compiled_output)
+
+    def run(self, input_file: str):
+        return generic_run([self.compiled_output], input_file)
+
+    def compile(self) -> None | tuple[int, str]:
+        p = subprocess.Popen(
+            self.cmdline, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE
+        )
+        _, stderr = p.communicate()
+        exit_code = p.returncode
+        return exit_code, stderr.decode("utf-8")
+
+
+class Cpp(CompiledLanguage):
+    @property
+    def cmdline(self) -> list[str]:
+        return [
+            "c++",
+            "--std=c++17",
+            self.source_file,
+            "-o",
+            self.compiled_output,
+            f"-fdiagnostics-color={'always' if self.config.color else 'never'}",
+        ]
+
+
+class Rust(CompiledLanguage):
+    @property
+    def cmdline(self):
+        return [
+            "rustc",
+            "-O",
+            "--crate-type",
+            "bin",
+            "--edition=2018",
+            self.source_file,
+            "--color",
+            "always" if self.config.color else "never",
+            "-o",
+            self.compiled_output,
+        ]
+
+
+class Haskell(CompiledLanguage):
+    def prepare(self):
+        self.temp_out_dir = tempfile.mkdtemp()
+        super().prepare()
+
+    def cleanup(self):
+        super().cleanup()
+        os.remove(self.temp_out_dir)
+
+    @property
+    def cmdline(self):
+        return [
+            "ghc",
+            "-outputdir",
+            self.temp_out_dir,
+            self.source_file,
+            "-o",
+            self.compiled_output,
+        ]
+
+
+def get_lang(source_file: str, config: Config) -> Language | None:
+    _, ext = path.splitext(source_file)
+    match ext:
         case ".cc" | ".cpp" | ".cxx":
-            return "c++"
+            return Cpp(source_file, config)
         case ".py":
-            return "python"
+            return Python(source_file, config)
         case ".hs":
-            return "haskell"
+            return Haskell(source_file, config)
         case ".rs":
-            return "rust"
+            return Rust(source_file, config)
+        case ".lua":
+            return Lua(source_file, config)
         case _:
             return None
 
 
-def is_compiled(lang: str):
-    return lang in {"c++", "haskell", "rust"}
-
-
-def script_cmdline(lang: str, file_path: str) -> list[str]:
-    match lang:
-        case "python":
-            python_bins = [
-                "pypy38",
-                "pypy3.8",
-                "pypy3",
-                "python38",
-                "python3.8",
-                "python3",
-                "python",
-            ]
-
-            bin = find_bin(python_bins)
-
-            if bin is None:
-                raise Exception(f"No python binary found, expected one from the list: ")
-
-            return [bin, file_path]
-
-        case _:
-            raise NotImplemented("Unknown language")
+def generic_run(cmdline: list[str], input_file: str) -> tuple[int, str, str]:
+    with open(input_file, "r") as input:
+        p = subprocess.Popen(
+            cmdline,
+            stdin=input,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        byte_streams = p.communicate()
+        exit_code = p.returncode
+        stdout, stderr = [s.decode("utf-8") for s in byte_streams]
+        return exit_code, stdout, stderr
 
 
 def find_bin(options: list[str]) -> str | None:
@@ -54,56 +177,6 @@ def find_bin(options: list[str]) -> str | None:
         if path is not None:
             return path
     return None
-
-
-def compile(
-    file: str, language: str, output_file: str, color: bool, cfg: config.Config
-) -> None | str:
-    match language:
-        case "haskell":
-            with tempfile.TemporaryDirectory() as tempdir:
-                cmdline = [
-                    "ghc",
-                    "-outputdir",
-                    tempdir,
-                    file,
-                    "-o",
-                    output_file,
-                ]
-                return compile_generic(cmdline)
-
-        case "c++":
-            cmdline = [
-                "c++",
-                "--std=c++17",
-                file,
-                "-o",
-                output_file,
-                f"-fdiagnostics-color={'always' if color else 'never'}",
-            ]
-
-            if cfg.cpp_libs_dir is not None:
-                cmdline += [f"-I{cfg.cpp_libs_dir}"]
-
-            return compile_generic(cmdline)
-
-        case "rust":
-            cmdline = [
-                "rustc",
-                "-O",
-                "--crate-type",
-                "bin",
-                "--edition=2018",
-                file,
-                "--color",
-                "always" if color else "never",
-                "-o",
-                output_file,
-            ]
-            return compile_generic(cmdline)
-
-        case _:
-            raise NotImplemented("Unknown language")
 
 
 def compile_generic(cmdline: list[str]) -> None | str:
