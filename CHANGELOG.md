@@ -1,3 +1,7 @@
+# 0.2.1
+
+- Fix cpp_libs_dir in config being ignored
+
 # 0.2.0
 
 - Rework code to be cleaner
