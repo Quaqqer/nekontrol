@@ -69,6 +69,7 @@ class Lua(InterpretedLanguage):
     def bins(self):
         return ["lua", "luajit"]
 
+
 class JSNode(InterpretedLanguage):
     @property
     def bins(self):
@@ -119,7 +120,7 @@ class CompiledLanguage(Language):
 class Cpp(CompiledLanguage):
     @property
     def cmdline(self) -> list[str]:
-        return [
+        cmdline = [
             "c++",
             "--std=c++17",
             self.source_file,
@@ -127,6 +128,9 @@ class Cpp(CompiledLanguage):
             self.compiled_output,
             f"-fdiagnostics-color={'always' if self.config.color else 'never'}",
         ]
+        if self.config.cpp_libs_dir is not None:
+            cmdline += [f"-I{self.config.cpp_libs_dir}"]
+        return cmdline
 
 
 class Rust(CompiledLanguage):
