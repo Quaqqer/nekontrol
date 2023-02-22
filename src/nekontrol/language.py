@@ -157,7 +157,7 @@ class Haskell(CompiledLanguage):
 
     def cleanup(self):
         super().cleanup()
-        os.remove(self.temp_out_dir)
+        shutil.rmtree(self.temp_out_dir)
 
     @property
     def cmdline(self):

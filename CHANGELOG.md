@@ -1,3 +1,7 @@
+# 0.2.2
+
+- Fix crash when cleaning up after GHC
+
 # 0.2.1
 
 - Fix cpp_libs_dir in config being ignored
