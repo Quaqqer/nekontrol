@@ -16,6 +16,14 @@ class Language:
         self.source_file = source_file
         self.config = config
 
+    @property
+    def submit_files(self) -> list[str]:
+        return [self.source_file]
+
+    @property
+    def kattis_name(self) -> str:
+        raise NotImplementedError("No default kattis name")
+
     def run(self, input_file: str) -> tuple[int, str, str]:
         raise NotImplementedError()
 
@@ -63,6 +71,10 @@ class Python(InterpretedLanguage):
             "python",
         ]
 
+    @property
+    def kattis_name(self) -> str:
+        return "Python 3"
+
 
 class Lua(InterpretedLanguage):
     @property
@@ -74,6 +86,10 @@ class JSNode(InterpretedLanguage):
     @property
     def bins(self):
         return ["node"]
+
+    @property
+    def kattis_name(self) -> str:
+        return "JavaScript"
 
 
 class CompiledLanguage(Language):
@@ -132,6 +148,27 @@ class Cpp(CompiledLanguage):
             cmdline += [f"-I{self.config.cpp_libs_dir}"]
         return cmdline
 
+    @property
+    def submit_files(self) -> list[str]:
+        files = [self.source_file]
+
+        def is_header(f: str):
+            match path.splitext(f)[1]:
+                case ".h" | ".hh" | ".hxx" | ".hpp":
+                    return True
+                case _:
+                    return False
+
+        libs = self.config.cpp_libs_dir
+        if libs is not None:
+            files += [path.join(libs, f) for f in os.listdir(libs) if is_header(f)]
+
+        return files
+
+    @property
+    def kattis_name(self) -> str:
+        return "C++"
+
 
 class Rust(CompiledLanguage):
     @property
@@ -148,6 +185,10 @@ class Rust(CompiledLanguage):
             "-o",
             self.compiled_output,
         ]
+
+    @property
+    def kattis_name(self) -> str:
+        return "Rust"
 
 
 class Haskell(CompiledLanguage):
@@ -169,6 +210,10 @@ class Haskell(CompiledLanguage):
             "-o",
             self.compiled_output,
         ]
+
+    @property
+    def kattis_name(self) -> str:
+        return "Haskell"
 
 
 def get_lang(source_file: str, config: Config) -> Language | None:

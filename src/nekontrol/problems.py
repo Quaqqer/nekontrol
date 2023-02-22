@@ -110,3 +110,9 @@ def sorted_problems(
     problems: list[ProblemIO],
 ) -> list[ProblemIO]:
     return natsort.natsorted(problems, key=lambda p: p.i)
+
+
+def inputs_outputs(problem: str, config: Config, dir: str, name: str):
+    return (
+        problem_sample_inputs_outputs(problem, config) or []
+    ) + local_inputs_outputs(dir, name)

@@ -7,7 +7,7 @@ from ..problems import ProblemIO
 from . import spinner
 
 
-def run(name: str, lang: Language, io: ProblemIO, config: Config):
+def run(name: str, lang: Language, io: ProblemIO, config: Config) -> bool:
     c = util.cw(config.color)
 
     with spinner.Spinner(
@@ -26,9 +26,12 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
             time_color_args = dict(color="black", on_color="on_yellow")
         else:
             time_color_args = dict(color="black", on_color="on_red")
-        time_msg = " " + c(f" ⏱  {duration:.3} s", **time_color_args)
+        time_msg = " " + c(f" ⏱  {duration:.3} s ", **time_color_args)
 
         diff = None
+
+        # If the run was successful (without any diff)
+        ok = True
 
         if config.diff and io.o is not None:
             with open(io.o, "r") as expected:
@@ -38,8 +41,10 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                 print(time_msg)
 
                 if isinstance(diff, str):
+                    ok = False
                     print(diff)
                 elif diff is True:
+                    ok = False
                     print(c("NOTE: The output contained debug lines", "yellow"))
 
                 if exit_code != 0:
@@ -53,6 +58,8 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
 
                     if stderr:
                         print(util.indented(stderr))
+
+                    ok = False
         else:
             s.stop()
             print(time_msg)
@@ -62,3 +69,5 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                 print(util.indented(ifile.read()))
             print(c("Got output:", "yellow"))
             print(util.indented(stdout))
+
+        return ok

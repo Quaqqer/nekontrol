@@ -7,7 +7,6 @@ from pathlib import Path
 @dataclass
 class Config:
     cpp_libs_dir: str | None = None
-    extra_flags: dict[str, list[str]] | None = None
     color: bool = sys.stdout.isatty()
     diff: bool = True
     ignore_debug: bool = True
