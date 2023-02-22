@@ -53,6 +53,7 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
 
                     if stderr:
                         print(util.indented(stderr))
+                    return
         else:
             s.stop()
             print(time_msg)
@@ -62,3 +63,7 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                 print(util.indented(ifile.read()))
             print(c("Got output:", "yellow"))
             print(util.indented(stdout))
+
+        if stderr:
+            print(c("Got stderr:", "yellow"))
+            print(util.indented(stderr))

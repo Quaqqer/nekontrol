@@ -1,3 +1,7 @@
+# 0.2.3
+
+- Print stderr
+
 # 0.2.2
 
 - Fix crash when cleaning up after GHC
