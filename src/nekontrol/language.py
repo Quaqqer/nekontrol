@@ -1,3 +1,4 @@
+import glob
 import os
 import shutil
 import subprocess
@@ -128,8 +129,17 @@ class Cpp(CompiledLanguage):
             self.compiled_output,
             f"-fdiagnostics-color={'always' if self.config.color else 'never'}",
         ]
+
         if self.config.cpp_libs_dir is not None:
-            cmdline += [f"-I{self.config.cpp_libs_dir}"]
+            cpp_sources = []
+            for root, _, files in os.walk(self.config.cpp_libs_dir):
+                for file in files:
+                    _, ext = path.splitext(file)
+                    if ext in {".cc", ".cpp", ".cxx"}:
+                        cpp_sources.append(path.join(root, file))
+
+            cmdline += [f"-I{self.config.cpp_libs_dir}"] + cpp_sources
+
         return cmdline
 
 

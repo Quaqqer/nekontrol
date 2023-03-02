@@ -1,3 +1,7 @@
+# 0.2.4
+
+- Find C++ source files (not headers, they are already found) in cpp_libs_dir
+
 # 0.2.3
 
 - Print stderr
