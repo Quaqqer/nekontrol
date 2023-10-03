@@ -7,8 +7,7 @@
   outputs = { self, nixpkgs, flake-utils, poetry2nix }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        inherit (poetry2nix.legacyPackages.${system})
-          mkPoetryApplication mkPoetryEnv;
+        inherit (poetry2nix.legacyPackages.${system}) mkPoetryApplication;
 
         pkgs = nixpkgs.legacyPackages.${system};
 
@@ -16,8 +15,10 @@
           projectDir = self;
           python = pkgs.python310;
         };
+
+        nekontrol = mkPoetryApplication poetryArgs;
       in {
-        packages.nekontrol = mkPoetryApplication poetryArgs;
-        packages.default = self.packages.${system}.nekontrol;
+        packages.nekontrol = nekontrol;
+        packages.default = nekontrol;
       });
 }
