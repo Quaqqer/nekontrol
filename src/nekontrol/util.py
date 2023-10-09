@@ -1,6 +1,5 @@
 import os
 import tempfile
-from . import config
 
 import termcolor
 
@@ -17,7 +16,7 @@ class TempFileName:
         self.file_name = file_name
         return self.file_name
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, _exc_type, _exc_val, _exc_tb):
         os.remove(self.file_name)
 
 

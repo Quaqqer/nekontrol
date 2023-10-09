@@ -11,7 +11,7 @@ inline_debug_regex = re.compile(r"\((?:dbg|debug)[^)]*\)", re.IGNORECASE)
 
 
 def compare_outputs(
-        output: str, expected_output: str, input_file: str, config: Config
+    output: str, expected_output: str, input_file: str, config: Config
 ) -> str | bool:
     c = util.cw(config.color)
 

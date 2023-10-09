@@ -15,7 +15,7 @@ class Spinner:
         final: str = "✓",
         final_fail: str = "✗",
         delay: float = 0.25,
-        newline: bool | None = None
+        newline: bool | None = None,
     ):
         self._message = message
         self._newline = newline if newline is not None else message is not None
