@@ -28,3 +28,8 @@ nk = 'nekontrol.interactive.cli:cli'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+flake8 = "^6.1.0"
+pytest = "^7.4.0"
