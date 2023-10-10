@@ -73,6 +73,34 @@ jobs:
         run: |
           poetry run pytest .
 
+  typecheck:
+    name: Typecheck
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+
+      - name: Set up pyright
+        run: |
+          sudo apt install nodejs
+          npm install -g pyright
+
+
+      - name: Type check
+        run: |
+          pyright --pythonpath "$(poetry env info --path)/bin/python" --warnings
+
   build:
     name: Build
 

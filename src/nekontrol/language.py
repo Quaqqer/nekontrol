@@ -2,7 +2,9 @@ import os
 import shutil
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from os import path
+from typing import Callable
 
 from click import ClickException
 
@@ -11,22 +13,50 @@ from .config import Config
 from .interactive.spinner import Spinner
 
 
+@dataclass
+class RunResult:
+    exit: int
+    stdout: str
+    stderr: str
+
+
+@dataclass
+class CompileResult:
+    pass
+
+
+@dataclass
+class CompileOk(CompileResult):
+    pass
+
+
+@dataclass
+class CompileError(CompileResult):
+    exit: int
+    stderr: str
+
+
+class Runnable:
+    def __init__(self, run: Callable[[str], RunResult]):
+        self._run = run
+
+    def run(self, input_file: str) -> RunResult:
+        return self._run(input_file)
+
+
 class Language:
     def __init__(self, source_file: str, config: Config):
         self.source_file = source_file
         self.config = config
 
-    def run(self, input_file: str) -> tuple[int, str, str]:
+    def prepare(self) -> Runnable:
         raise NotImplementedError()
-
-    def prepare(self):
-        pass
 
     def cleanup(self):
         pass
 
-    def __enter__(self):
-        self.prepare()
+    def __enter__(self) -> Runnable:
+        return self.prepare()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.cleanup()
@@ -42,17 +72,19 @@ class InterpretedLanguage(Language):
         bin = find_bin(self.bins)
 
         if bin is None:
-            raise Exception(f"Binary for language not found, needs one of {self.bins}")
+            raise Exception(
+                f"Binary for language not found, needs one of {', '.join(self.bins)}"
+            )
 
         self.bin = bin
 
-    def run(self, input_file: str):
-        return generic_run([self.bin, self.source_file], input_file)
+    def prepare(self) -> Runnable:
+        return Runnable(run=lambda i: generic_run([self.bin, self.source_file], i))
 
 
 class Python(InterpretedLanguage):
     @property
-    def bins(self):
+    def bins(self) -> list[str]:
         return [
             "pypy38",
             "pypy3.8",
@@ -81,19 +113,23 @@ class CompiledLanguage(Language):
     def cmdline(self) -> list[str]:
         raise NotImplementedError()
 
-    def prepare(self):
+    def prepare(self) -> Runnable:
         with Spinner(f"Compiling {self.source_file} ", color=self.config.color) as s:
             self.compiled_output = tempfile.mktemp()
-            exit_code, stderr = self.compile()
+            compile_result = self.compile()
 
-            if exit_code == 0:
-                s.stop(True)
-            else:
-                s.stop(False)
-                err_msg = f"Compilation exited with code {exit_code}" + (
-                    " and stderr:\n" + util.indented(stderr) if stderr else ""
-                )
-                raise ClickException(err_msg)
+            match compile_result:
+                case CompileOk():
+                    s.stop()
+                    return Runnable(lambda i: generic_run([self.compiled_output], i))
+                case CompileError(exit, stderr):
+                    s.stop()
+                    err_msg = f"Compilation exited with code {exit}" + (
+                        " and stderr:\n" + util.indented(stderr) if stderr else ""
+                    )
+                    raise ClickException(err_msg)
+                case _:
+                    raise AssertionError("Unreachable")
 
     def cleanup(self):
         if path.exists(self.compiled_output):
@@ -102,7 +138,7 @@ class CompiledLanguage(Language):
     def run(self, input_file: str):
         return generic_run([self.compiled_output], input_file)
 
-    def compile(self) -> tuple[int, str]:
+    def compile(self) -> CompileResult:
         """Compile the file.
 
         Returns:
@@ -114,7 +150,11 @@ class CompiledLanguage(Language):
         )
         _, stderr = p.communicate()
         exit_code = p.returncode
-        return exit_code, stderr.decode("utf-8")
+
+        if exit_code == 0:
+            return CompileOk()
+        else:
+            return CompileError(exit=exit_code, stderr=stderr.decode("utf-8"))
 
 
 class Cpp(CompiledLanguage):
@@ -199,7 +239,7 @@ def get_lang(source_file: str, config: Config) -> Language | None:
             return None
 
 
-def generic_run(cmdline: list[str], input_file: str) -> tuple[int, str, str]:
+def generic_run(cmdline: list[str], input_file: str) -> RunResult:
     with open(input_file, "r") as input:
         p = subprocess.Popen(
             cmdline,
@@ -210,7 +250,7 @@ def generic_run(cmdline: list[str], input_file: str) -> tuple[int, str, str]:
         byte_streams = p.communicate()
         exit_code = p.returncode
         stdout, stderr = [s.decode("utf-8") for s in byte_streams]
-        return exit_code, stdout, stderr
+        return RunResult(exit=exit_code, stdout=stdout, stderr=stderr)
 
 
 def find_bin(options: list[str]) -> str | None:

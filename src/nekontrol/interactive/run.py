@@ -2,12 +2,12 @@ import time
 
 from .. import compare, util
 from ..config import Config
-from ..language import Language
+from ..language import Runnable
 from ..problems import ProblemIO
 from . import spinner
 
 
-def run(name: str, lang: Language, io: ProblemIO, config: Config):
+def run(name: str, runnable: Runnable, io: ProblemIO, config: Config):
     c = util.cw(config.color)
 
     with spinner.Spinner(
@@ -16,7 +16,7 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
         newline=False,
     ) as s:
         start = time.time()
-        exit_code, stdout, stderr = lang.run(io.i)
+        result = runnable.run(io.i)
         finish = time.time()
         duration = finish - start
 
@@ -32,9 +32,14 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
 
         if config.diff and io.o is not None:
             with open(io.o, "r") as expected:
-                diff = compare.compare_outputs(stdout, expected.read(), io.i, config)
+                diff = compare.compare_outputs(
+                    result.stdout, expected.read(), io.i, config
+                )
 
-                s.stop(isinstance(diff, bool))
+                if isinstance(diff, bool):
+                    s.ok()
+                else:
+                    s.fail()
                 print(time_msg)
 
                 if isinstance(diff, str):
@@ -42,17 +47,17 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
                 elif diff is True:
                     print(c("NOTE: The output contained debug lines", "yellow"))
 
-                if exit_code != 0:
+                if result.exit != 0:
                     print(
                         c(
-                            f"Proccess exited with a non-zero exit code {exit_code}"
-                            + (" and the following stderr:" if stderr else ""),
+                            f"Proccess exited with a non-zero exit code {result.exit}"
+                            + (" and the following stderr:" if result.stderr else ""),
                             "red",
                         )
                     )
 
-                    if stderr:
-                        print(util.indented(stderr))
+                    if result.stderr:
+                        print(util.indented(result.stderr))
                     return
         else:
             s.stop()
@@ -62,8 +67,8 @@ def run(name: str, lang: Language, io: ProblemIO, config: Config):
             with open(io.i, "r") as ifile:
                 print(util.indented(ifile.read()))
             print(c("Got output:", "yellow"))
-            print(util.indented(stdout))
+            print(util.indented(result.stdout))
 
-        if stderr:
+        if result.stderr:
             print(c("Got stderr:", "yellow"))
-            print(util.indented(stderr))
+            print(util.indented(result.stderr))

@@ -20,8 +20,8 @@ class TempFileName:
         os.remove(self.file_name)
 
 
-def indented(s: str) -> str:
-    return "\n".join("  " + ds for ds in s.splitlines())
+def indented(s: str, indent: int = 2) -> str:
+    return "\n".join(" " * indent + ds for ds in s.splitlines())
 
 
 def cw(color: bool):

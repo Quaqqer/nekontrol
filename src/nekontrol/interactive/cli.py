@@ -63,6 +63,6 @@ def cli(
             f"Language for file extension {extension} is not implemented."
         )
 
-    with lang:
+    with lang as runnable:
         for io in ios:
-            run.run(file_name, lang, io, config)
+            run.run(file_name, runnable, io, config)

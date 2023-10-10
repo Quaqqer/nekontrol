@@ -1,8 +1,15 @@
 import os
 import sys
 import threading
+from enum import Enum
 
 from ..util import cw
+
+
+class SpinnerResult(Enum):
+    OK = 0
+    FAIL = 1
+    NONE = 2
 
 
 class Spinner:
@@ -25,7 +32,7 @@ class Spinner:
         self._final_fail = final_fail
         self._delay = delay
 
-        self._result: bool | None = None
+        self._result: SpinnerResult = SpinnerResult.NONE
         self._thread: threading.Thread | None = None
         self._stopped = False
 
@@ -85,15 +92,20 @@ class Spinner:
                 self._stream.write("\n")
                 self._stream.flush()
 
-    def ok(self, result=True):
-        self._result = result
+    def ok(self):
+        self.stop(result=SpinnerResult.OK)
 
     def fail(self):
-        self._result = False
+        self.stop(result=SpinnerResult.FAIL)
 
-    def stop(self, result: bool | str | None = None):
-        if isinstance(result, str):
-            self._stop(result)
-        elif result is not None:
-            self._result = result
-        self._stop()
+    def stop(self, result: SpinnerResult = SpinnerResult.OK, msg: str = ""):
+        m = ""
+        match result:
+            case SpinnerResult.OK:
+                m = self._final_ok
+            case SpinnerResult.FAIL:
+                m = self._final_fail
+
+        m += msg
+
+        self._stop(m)
