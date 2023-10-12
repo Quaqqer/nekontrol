@@ -11,6 +11,8 @@ from .sources.local import LocalSource
 def problem_samples(problem: str, source_dir: str, cfg: Config) -> list[ProblemSample]:
     sources: list[ProblemSource] = [LocalSource(), KattisSource()]
 
+    # TODO: No spinners anymore :(, please fix
+
     samples = [
         sample
         for source in sources
