@@ -1,4 +1,11 @@
+import json
+import os
 from abc import ABC
+from os import path
+
+import appdirs
+
+from nekontrol.config import Config
 
 from .sample import ProblemSample
 
@@ -9,9 +16,56 @@ class ProblemSource(ABC):
     def status(self) -> str:
         raise NotImplementedError()
 
-    def find_problem(self, problem_name: str, source_path: str) -> list[ProblemSample]:
+    def find_problem(
+        self, problem: str, source_dir: str, cfg: Config
+    ) -> list[ProblemSample]:
         raise NotImplementedError()
 
 
 class CachedProblemSource(ProblemSource):
-    pass
+    def cache_dir(self) -> str:
+        cache_dir = appdirs.user_cache_dir("nekontrol")
+        source_cache_dir = path.join(cache_dir, "sources", self.source_name)
+        return source_cache_dir
+
+    def write_cached_samples(self, problem: str, samples: list[ProblemSample]):
+        cd = self.cache_dir()
+        json_path = path.join(cd, f"{problem}.json")
+
+        j = [sample.to_json() for sample in samples]
+
+        if not path.exists(cd):
+            os.makedirs(cd)
+        with open(json_path, "w+") as f:
+            f.write(json.dumps(j))
+
+    def read_cached_samples(self, problem: str) -> list[ProblemSample] | None:
+        cd = self.cache_dir()
+
+        json_path = path.join(cd, f"{problem}.json")
+
+        if not path.exists(json_path):
+            return None
+
+        with open(json_path, "r") as f:
+            j = json.loads(f.read())
+        samples = [ProblemSample.from_json(o) for o in j]
+        return samples
+
+    def find_problem(
+        self, problem: str, source_dir: str, cfg: Config
+    ) -> list[ProblemSample]:
+        cached = self.read_cached_samples(problem)
+
+        if cached is not None:
+            return cached
+
+        uncached = self.find_uncached(problem, source_dir, cfg)
+        self.write_cached_samples(problem, uncached)
+
+        return uncached
+
+    def find_uncached(
+        self, problem: str, source_path: str, cfg: Config
+    ) -> list[ProblemSample]:
+        raise NotImplementedError()

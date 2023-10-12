@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -16,3 +17,20 @@ class ProblemSample:
     """The input data"""
     output: str | None
     """The output data"""
+
+    @staticmethod
+    def from_json(obj: Any) -> "ProblemSample":
+        name = obj["name"]
+        source = obj["source"]
+        input = obj["input"]
+        output = obj["output"]
+        assert all(isinstance(v, str) for v in [name, source, input, output])
+        return ProblemSample(name=name, source=source, input=input, output=output)
+
+    def to_json(self) -> Any:
+        return {
+            "name": self.name,
+            "source": self.source,
+            "input": self.input,
+            "output": self.output,
+        }

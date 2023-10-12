@@ -53,7 +53,7 @@ def test(
             print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
         problem = file_base
 
-    samples = problems.problem_samples(file_base, file_path)
+    samples = problems.problem_samples(file_base, file_dir, config)
 
     if len(samples) == 0:
         raise click.ClickException(f"Found no inputs to run for problem {problem}")
