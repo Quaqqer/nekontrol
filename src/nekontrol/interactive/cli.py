@@ -9,14 +9,20 @@ from . import run
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
 
-@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.group()
+def cli():
+    """nekontrol - Control your kattis solutions."""
+    ...
+
+
+@cli.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
 @click.option("-d", "--diff", type=bool)
 @click.option("-c", "--color", type=bool)
 @click.option("-v", "--verbose", type=bool)
 @click.option("--ignore-debug", type=bool)
-def cli(
+def test(
     file_path: str,
     problem: str | None,
     color: bool | None,
@@ -24,10 +30,7 @@ def cli(
     ignore_debug: bool | None,
     verbose: bool | None,
 ):
-    """nekontrol - Control your kattis solutions.
-
-    Run FILE and test against sample and local test data.
-    """
+    """Run and test against sample and local test data."""
     file_name = path.basename(file_path)
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
