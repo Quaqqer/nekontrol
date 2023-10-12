@@ -239,18 +239,17 @@ def get_lang(source_file: str, config: Config) -> Language | None:
             return None
 
 
-def generic_run(cmdline: list[str], input_file: str) -> RunResult:
-    with open(input_file, "r") as input:
-        p = subprocess.Popen(
-            cmdline,
-            stdin=input,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        byte_streams = p.communicate()
-        exit_code = p.returncode
-        stdout, stderr = [s.decode("utf-8") for s in byte_streams]
-        return RunResult(exit=exit_code, stdout=stdout, stderr=stderr)
+def generic_run(cmdline: list[str], input: str) -> RunResult:
+    p = subprocess.Popen(
+        cmdline,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    byte_streams = p.communicate(input=input.encode("utf-8"))
+    exit_code = p.returncode
+    stdout, stderr = [s.decode("utf-8") for s in byte_streams]
+    return RunResult(exit=exit_code, stdout=stdout, stderr=stderr)
 
 
 def find_bin(options: list[str]) -> str | None:

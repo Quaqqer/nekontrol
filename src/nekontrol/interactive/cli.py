@@ -31,6 +31,7 @@ def test(
     verbose: bool | None,
 ):
     """Run and test against sample and local test data."""
+    file_path = path.abspath(file_path)
     file_name = path.basename(file_path)
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
@@ -52,11 +53,9 @@ def test(
             print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
         problem = file_base
 
-    local_ios = problems.local_inputs_outputs(file_dir, file_base)
-    sample_ios = problems.problem_sample_inputs_outputs(problem, config)
-    ios = local_ios + (sample_ios or [])
+    samples = problems.problem_samples(file_base, file_path)
 
-    if len(ios) == 0:
+    if len(samples) == 0:
         raise click.ClickException(f"Found no inputs to run for problem {problem}")
 
     lang = language.get_lang(file_path, config)
@@ -67,5 +66,5 @@ def test(
         )
 
     with lang as runnable:
-        for io in ios:
-            run.run(file_name, runnable, io, config)
+        for sample in samples:
+            run.run(file_name, runnable, sample, config)
