@@ -36,7 +36,7 @@ Adding more languages is left as an exercise for the reader.
 
 ## Usage
 
-Simply run `nk <source file>` and it should hopefully compile (if needed)
+Simply run `nk test <source file>` and it should hopefully compile (if needed)
 and run!
 
 - `nk` assumes that the name of the source files matches the name of the
