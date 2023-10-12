@@ -8,6 +8,7 @@ from . import run
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
+
 @click.group()
 def cli():
     """nekontrol - Control your kattis solutions."""
