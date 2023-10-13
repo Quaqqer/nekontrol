@@ -1,2 +1,2 @@
 main = do
-  interact (show . (*2) . read)
+  interact ((++"\n") . show . (*2) . read)
