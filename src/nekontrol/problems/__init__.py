@@ -27,8 +27,6 @@ def problem_samples(
         if tctx is not None:
             task = tctx.add_task(f"{src.source_name}: Fetching")
 
-        await asyncio.sleep(1)
-
         samples[i] = src.find_problem(problem, source_dir, cfg=cfg)
 
         if task is not None:
