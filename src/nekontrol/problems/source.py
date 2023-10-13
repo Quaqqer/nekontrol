@@ -4,8 +4,10 @@ from abc import ABC
 from os import path
 
 import appdirs
+from typing_extensions import override
 
 from nekontrol.config import Config
+from nekontrol.interactive.tasks import TaskContext
 
 from .sample import ProblemSample
 
@@ -13,11 +15,12 @@ from .sample import ProblemSample
 class ProblemSource(ABC):
     source_name: str
 
-    def status(self) -> str:
-        raise NotImplementedError()
-
     def find_problem(
-        self, problem: str, source_dir: str, cfg: Config
+        self,
+        problem: str,
+        source_dir: str,
+        cfg: Config,
+        tctx: TaskContext | None = None,
     ) -> list[ProblemSample]:
         raise NotImplementedError()
 
@@ -52,20 +55,29 @@ class CachedProblemSource(ProblemSource):
         samples = [ProblemSample.from_json(o) for o in j]
         return samples
 
+    @override
     def find_problem(
-        self, problem: str, source_dir: str, cfg: Config
+        self,
+        problem: str,
+        source_dir: str,
+        cfg: Config,
+        tctx: TaskContext | None = None,
     ) -> list[ProblemSample]:
         cached = self.read_cached_samples(problem)
 
         if cached is not None:
             return cached
 
-        uncached = self.find_uncached(problem, source_dir, cfg)
+        uncached = self.find_uncached(problem, source_dir, cfg, tctx=tctx)
         self.write_cached_samples(problem, uncached)
 
         return uncached
 
     def find_uncached(
-        self, problem: str, source_path: str, cfg: Config
+        self,
+        problem: str,
+        source_dir: str,
+        cfg: Config,
+        tctx: TaskContext | None = None,
     ) -> list[ProblemSample]:
         raise NotImplementedError()

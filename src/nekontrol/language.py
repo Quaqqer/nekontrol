@@ -4,13 +4,15 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from os import path
-from typing import Callable
+from typing import Callable, Union
 
 from click import ClickException
+from typing_extensions import assert_never
+
+from nekontrol.interactive.tasks import TaskContext
 
 from . import util
 from .config import Config
-from .interactive.spinner import Spinner
 
 
 @dataclass
@@ -21,19 +23,17 @@ class RunResult:
 
 
 @dataclass
-class CompileResult:
+class CompileOk:
     pass
 
 
 @dataclass
-class CompileOk(CompileResult):
-    pass
-
-
-@dataclass
-class CompileError(CompileResult):
+class CompileError:
     exit: int
     stderr: str
+
+
+CompileResult = Union[CompileOk, CompileError]
 
 
 class Runnable:
@@ -45,9 +45,12 @@ class Runnable:
 
 
 class Language:
-    def __init__(self, source_file: str, config: Config):
+    def __init__(
+        self, source_file: str, config: Config, tctx: TaskContext | None = None
+    ):
         self.source_file = source_file
         self.config = config
+        self.tctx = tctx
 
     def prepare(self) -> Runnable:
         raise NotImplementedError()
@@ -67,7 +70,9 @@ class InterpretedLanguage(Language):
     def bins(self) -> list[str]:
         raise NotImplementedError()
 
-    def __init__(self, source_file: str, config: Config):
+    def __init__(
+        self, source_file: str, config: Config, tctx: TaskContext | None = None
+    ):
         super().__init__(source_file, config)
         bin = find_bin(self.bins)
 
@@ -114,22 +119,29 @@ class CompiledLanguage(Language):
         raise NotImplementedError()
 
     def prepare(self) -> Runnable:
-        with Spinner(f"Compiling {self.source_file} ", color=self.config.color) as s:
-            self.compiled_output = tempfile.mktemp()
-            compile_result = self.compile()
+        task = (
+            self.tctx.add_task(f"Compiling {self.source_file} ") if self.tctx else None
+        )
 
-            match compile_result:
-                case CompileOk():
-                    s.stop()
-                    return Runnable(lambda i: generic_run([self.compiled_output], i))
-                case CompileError(exit, stderr):
-                    s.stop()
-                    err_msg = f"Compilation exited with code {exit}" + (
-                        " and stderr:\n" + util.indented(stderr) if stderr else ""
-                    )
-                    raise ClickException(err_msg)
-                case _:
-                    raise AssertionError("Unreachable")
+        self.compiled_output = tempfile.mktemp()
+        compile_result = self.compile()
+
+        match compile_result:
+            case CompileOk():
+                if task:
+                    task.ok()
+
+                return Runnable(lambda i: generic_run([self.compiled_output], i))
+            case CompileError(exit, stderr):
+                if task:
+                    task.fail()
+
+                err_msg = f"Compilation exited with code {exit}" + (
+                    " and stderr:\n" + util.indented(stderr) if stderr else ""
+                )
+                raise ClickException(err_msg)
+            case _:
+                assert_never(compile_result)
 
     def cleanup(self):
         if path.exists(self.compiled_output):
@@ -202,7 +214,7 @@ class Rust(CompiledLanguage):
 class Haskell(CompiledLanguage):
     def prepare(self):
         self.temp_out_dir = tempfile.mkdtemp()
-        super().prepare()
+        return super().prepare()
 
     def cleanup(self):
         super().cleanup()
@@ -220,21 +232,23 @@ class Haskell(CompiledLanguage):
         ]
 
 
-def get_lang(source_file: str, config: Config) -> Language | None:
+def get_lang(
+    source_file: str, config: Config, tctx: TaskContext | None = None
+) -> Language | None:
     _, ext = path.splitext(source_file)
     match ext:
         case ".cc" | ".cpp" | ".cxx":
-            return Cpp(source_file, config)
+            return Cpp(source_file, config, tctx=tctx)
         case ".py":
-            return Python(source_file, config)
+            return Python(source_file, config, tctx=tctx)
         case ".hs":
-            return Haskell(source_file, config)
+            return Haskell(source_file, config, tctx=tctx)
         case ".rs":
-            return Rust(source_file, config)
+            return Rust(source_file, config, tctx=tctx)
         case ".lua":
-            return Lua(source_file, config)
+            return Lua(source_file, config, tctx=tctx)
         case ".js":
-            return JSNode(source_file, config)
+            return JSNode(source_file, config, tctx=tctx)
         case _:
             return None
 

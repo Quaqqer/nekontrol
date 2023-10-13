@@ -6,6 +6,7 @@ from typing import Callable
 from nekontrol.config import Config
 from nekontrol.problems.sample import ProblemSample
 
+from ...interactive.tasks import TaskContext
 from ..source import ProblemSource
 
 
@@ -43,11 +44,12 @@ def find_local_sources(filter: Callable[[str], bool], source_dir: str, source: s
 class LocalSource(ProblemSource):
     source_name = "Local samples"
 
-    def status(self) -> str:
-        return "Fetching local problem samples"
-
     def find_problem(
-        self, problem: str, source_dir: str, cfg: Config
+        self,
+        problem: str,
+        source_dir: str,
+        cfg: Config,
+        tctx: TaskContext | None = None,
     ) -> list[ProblemSample]:
         return find_local_sources(
             lambda fname: fname.startswith(problem), source_dir, "Local"

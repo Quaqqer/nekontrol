@@ -6,6 +6,7 @@ import requests
 
 from nekontrol.config import Config
 
+from ...interactive.tasks import TaskContext
 from ..sample import ProblemSample
 from ..source import CachedProblemSource
 from .local import find_local_sources
@@ -14,11 +15,12 @@ from .local import find_local_sources
 class KattisSource(CachedProblemSource):
     source_name = "Kattis"
 
-    def status(self) -> str:
-        return "Fetching kattis problem samples"
-
     def find_uncached(
-        self, problem: str, source_dir: str, cfg: Config
+        self,
+        problem: str,
+        source_dir: str,
+        cfg: Config,
+        tctx: TaskContext | None = None,
     ) -> list[ProblemSample]:
         url = f"https://open.kattis.com/problems/{problem}/file/statement/samples.zip"
         with requests.get(url, stream=True) as response:
