@@ -5,4 +5,7 @@ let
     projectDir = ./.;
     editablePackageSources = { nekontrol = ./src; };
   };
-in nekontrolEnv.env.overrideAttrs (oldAttrs: { buildInputs = [ pkgs.poetry ]; })
+
+  test_langs = [ pkgs.lua pkgs.nodejs pkgs.rustc pkgs.gcc pkgs.ghc pkgs.pypy38 ];
+in nekontrolEnv.env.overrideAttrs
+(oldAttrs: { buildInputs = [ pkgs.poetry ] ++ test_langs; })
