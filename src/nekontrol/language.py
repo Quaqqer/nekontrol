@@ -120,6 +120,10 @@ class Lua(InterpretedLanguage):
 
 class JSNode(InterpretedLanguage):
     @property
+    def full_name(self) -> str:
+        return "Node"
+
+    @property
     def bins(self):
         return ["node"]
 
@@ -182,6 +186,10 @@ class CompiledLanguage(Language):
 
 class Cpp(CompiledLanguage):
     @property
+    def full_name(self) -> str:
+        return "C++"
+
+    @property
     def cmdline(self) -> list[str]:
         cmdline = [
             "c++",
@@ -207,6 +215,10 @@ class Cpp(CompiledLanguage):
 
 class Rust(CompiledLanguage):
     @property
+    def full_name(self) -> str:
+        return "Rust"
+
+    @property
     def cmdline(self):
         return [
             "rustc",
@@ -223,6 +235,10 @@ class Rust(CompiledLanguage):
 
 
 class Haskell(CompiledLanguage):
+    @property
+    def full_name(self) -> str:
+        return "Haskell"
+
     def prepare(self):
         self.temp_out_dir = tempfile.mkdtemp()
         return super().prepare()
