@@ -4,7 +4,6 @@ from abc import ABC
 from os import path
 
 import appdirs
-from typing_extensions import override
 
 from nekontrol.config import Config
 from nekontrol.interactive.tasks import TaskContext
@@ -55,7 +54,6 @@ class CachedProblemSource(ProblemSource):
         samples = [ProblemSample.from_json(o) for o in j]
         return samples
 
-    @override
     def find_problem(
         self,
         problem: str,

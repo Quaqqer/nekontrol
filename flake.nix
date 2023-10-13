@@ -13,7 +13,7 @@
 
         poetryArgs = {
           projectDir = self;
-          python = pkgs.python310;
+          python = pkgs.python311;
         };
 
         nekontrol = mkPoetryApplication poetryArgs;

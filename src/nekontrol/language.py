@@ -4,10 +4,9 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from os import path
-from typing import Callable, Union
+from typing import Callable, Union, assert_never
 
 from click import ClickException
-from typing_extensions import assert_never
 
 from nekontrol.interactive.tasks import TaskContext
 
