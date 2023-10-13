@@ -57,6 +57,10 @@ class Language:
     def cleanup(self):
         pass
 
+    @property
+    def full_name(self) -> str:
+        raise NotImplementedError()
+
     def __enter__(self) -> Runnable:
         return self.prepare()
 
@@ -88,6 +92,10 @@ class InterpretedLanguage(Language):
 
 class Python(InterpretedLanguage):
     @property
+    def full_name(self) -> str:
+        return "Python 3"
+
+    @property
     def bins(self) -> list[str]:
         return [
             "pypy38",
@@ -101,6 +109,10 @@ class Python(InterpretedLanguage):
 
 
 class Lua(InterpretedLanguage):
+    @property
+    def full_name(self) -> str:
+        return "Lua"
+
     @property
     def bins(self):
         return ["lua", "luajit"]
