@@ -36,7 +36,7 @@ def run(
 
     time_msg = f"[{bg}] ⏱  {duration:.3} s [/{bg}]"
 
-    task_finished_msg = task_msg + ' ' + time_msg
+    task_finished_msg = task_msg + " " + time_msg
 
     diff = None
 
