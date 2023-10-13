@@ -11,7 +11,7 @@ inline_debug_regex = re.compile(r"\((?:dbg|debug)[^)]*\)", re.IGNORECASE)
 
 
 def compare_outputs(
-    output: str, expected_output: str, input_file: str, config: Config
+    output: str, expected_output: str, input: str, config: Config
 ) -> str | bool:
     c = util.cw(config.color)
 
@@ -45,16 +45,15 @@ def compare_outputs(
     if all(d.startswith("  ") for d in diff):
         return found_debug
     else:
-        with open(input_file, "r") as ifile:
-            return (
-                c("Input:", "yellow")
-                + "\n"
-                + util.indented(ifile.read())
-                + "\n"
-                + c("Diff:", "yellow")
-                + "\n"
-                + "\n".join(color_diff(diff) if config.color else diff)
-            )
+        return (
+            c("Input:", "yellow")
+            + "\n"
+            + util.indented(input)
+            + "\n"
+            + c("Diff:", "yellow")
+            + "\n"
+            + "\n".join(color_diff(diff) if config.color else diff)
+        )
 
 
 def color_diff(diff: list[str]) -> list[str]:

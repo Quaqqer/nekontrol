@@ -5,6 +5,7 @@ import click
 from .. import language, problems, util
 from ..config import exec_config
 from . import run
+from .tasks import TaskContext
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
@@ -31,6 +32,7 @@ def test(
     verbose: bool | None,
 ):
     """Run and test against sample and local test data."""
+    file_path = path.abspath(file_path)
     file_name = path.basename(file_path)
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
@@ -52,20 +54,19 @@ def test(
             print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
         problem = file_base
 
-    local_ios = problems.local_inputs_outputs(file_dir, file_base)
-    sample_ios = problems.problem_sample_inputs_outputs(problem, config)
-    ios = local_ios + (sample_ios or [])
+    with TaskContext() as tctx:
+        samples = problems.problem_samples(file_base, file_dir, config, tctx=tctx)
 
-    if len(ios) == 0:
-        raise click.ClickException(f"Found no inputs to run for problem {problem}")
+        if len(samples) == 0:
+            raise click.ClickException(f"Found no inputs to run for problem {problem}")
 
-    lang = language.get_lang(file_path, config)
+        lang = language.get_lang(file_path, config, tctx=tctx)
 
-    if lang is None:
-        raise click.ClickException(
-            f"Language for file extension {extension} is not implemented."
-        )
+        if lang is None:
+            raise click.ClickException(
+                f"Language for file extension {extension} is not implemented."
+            )
 
-    with lang as runnable:
-        for io in ios:
-            run.run(file_name, runnable, io, config)
+        with lang as runnable:
+            for sample in samples:
+                run.run(file_name, runnable, sample, config, tctx=tctx)
