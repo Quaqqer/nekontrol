@@ -35,7 +35,12 @@ def problem_samples(
             else:
                 task.fail()
 
-    asyncio.run(asyncio.wait([fill_samples(i) for i, _ in enumerate(sources)]))
+    async def fill_all_samples():
+        await asyncio.wait(
+            [asyncio.create_task(fill_samples(i)) for i, _ in enumerate(sources)]
+        )
+
+    asyncio.run(fill_all_samples())
 
     return [s for src in samples for s in src]
 

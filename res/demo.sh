@@ -5,18 +5,18 @@
 # (cd examples && asciinema rec --overwrite --cols 100 --rows 25 -c 'doitlive play ../demo.sh -q' ../demo.cast && cd .. && svg-term --in demo.cast --out demo.svg --window --padding-x 1)
 
 #doitlive commentecho: true
-#doitlive alias: ls=exa
+#doitlive alias: ls=eza
 
 ls -l
 
-nk correct.py
+nk test correct.py
 
-nk c++.cc
+nk test c++.cc
 
-nk incorrect.py
+nk test incorrect.py
 
-nk error.py
+nk test error.py
 
-nk twostones.py
+nk test twostones.py
 
-nk compile_error.cc
+nk test compile_error.cc
