@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=True)
 class ProblemSample:
     """A sample for a problem.
 

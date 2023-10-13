@@ -237,7 +237,7 @@ def get_lang(
 ) -> Language | None:
     _, ext = path.splitext(source_file)
     match ext:
-        case ".cc" | ".cpp" | ".cxx":
+        case ".cc" | ".cpp" | ".cxx" | ".c++":
             return Cpp(source_file, config, tctx=tctx)
         case ".py":
             return Python(source_file, config, tctx=tctx)
