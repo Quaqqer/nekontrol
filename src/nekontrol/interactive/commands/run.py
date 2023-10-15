@@ -77,4 +77,4 @@ def run(
 
     if result.stderr:
         c.print("[yellow]Got stderr:")
-        print(escape(util.indented(result.stderr)))
+        c.print(escape(util.indented(result.stderr)))

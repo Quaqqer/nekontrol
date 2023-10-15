@@ -1,8 +1,9 @@
 import os.path as path
 
 import click
+from rich.console import Console
 
-from nekontrol import language, problems, util
+from nekontrol import language, problems
 from ..tasks import TaskContext
 from . import run
 
@@ -13,11 +14,11 @@ def test(file_path, problem, config):
     file_dir = path.dirname(file_path)
     file_base, extension = path.splitext(file_name)
 
-    c = util.cw(config.color)
+    c = Console()
 
     if problem is None:
         if config.verbose:
-            print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
+            c.print(f"[yellow]No problem name specified, guessing '{file_base}'")
         problem = file_base
 
     with TaskContext() as tctx:

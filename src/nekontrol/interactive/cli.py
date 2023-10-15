@@ -2,7 +2,8 @@ import os.path as path
 
 import click
 
-from ..config import exec_config
+from nekontrol.console import setup_console
+from nekontrol.config import exec_config
 from . import commands
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
@@ -30,6 +31,8 @@ def test(
     verbose: bool | None,
 ):
     """Run and test against sample and local test data."""
+    setup_console(color)
+
     file_path = path.abspath(file_path)
     file_dir = path.dirname(file_path)
 
@@ -43,7 +46,6 @@ def test(
     if verbose is not None:
         config.verbose = verbose
 
-    print(commands.test)
     commands.test.test(file_path, problem, config)
 
 
@@ -63,6 +65,8 @@ def submit(
     verbose: bool | None,
 ):
     """Submit a solution to Kattis."""
+    setup_console(color)
+
     file_path = path.abspath(file_path)
     file_dir = path.dirname(file_path)
 
