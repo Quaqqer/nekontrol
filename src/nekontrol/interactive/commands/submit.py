@@ -89,9 +89,7 @@ def submit(file_path, problem, config):
     test.test(file_path, problem, config)
 
     if not config.force:
-        ans = input("Submit? [Y/n] ")
-        if ans.lower() == "n":
-            return
+        click.confirm("Submit?", abort=True)
 
     # login to kattis
     if config.kattis_username is None:
