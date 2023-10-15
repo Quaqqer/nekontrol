@@ -38,7 +38,7 @@ from lxml.html import fragment_fromstring
 import click
 import requests
 
-from .. import language, util
+from nekontrol import language, util
 from . import test
 
 _HEADERS = {"User-Agent": "nekontrol/0.2.5"}

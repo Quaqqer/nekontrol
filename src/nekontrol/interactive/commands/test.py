@@ -2,9 +2,9 @@ import os.path as path
 
 import click
 
-from .. import language, problems, util
+from nekontrol import language, problems, util
+from ..tasks import TaskContext
 from . import run
-from .tasks import TaskContext
 
 
 def test(file_path, problem, config):

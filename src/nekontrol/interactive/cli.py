@@ -1,10 +1,9 @@
 import os.path as path
-from typing import Optional
 
 import click
 
 from ..config import exec_config
-from . import test, submit
+from . import commands
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
@@ -22,13 +21,13 @@ def cli():
 @click.option("-c", "--color", type=bool)
 @click.option("-v", "--verbose", type=bool)
 @click.option("--ignore-debug", type=bool)
-def test_cli(
+def test(
     file_path: str,
-    problem: Optional[str],
-    color: Optional[bool],
-    diff: Optional[bool],
-    ignore_debug: Optional[bool],
-    verbose: Optional[bool],
+    problem: str | None,
+    color: bool | None,
+    diff: bool | None,
+    ignore_debug: bool | None,
+    verbose: bool | None,
 ):
     """Run and test against sample and local test data."""
     file_path = path.abspath(file_path)
@@ -44,7 +43,8 @@ def test_cli(
     if verbose is not None:
         config.verbose = verbose
 
-    test.test(file_path, problem, config)
+    print(commands.test)
+    commands.test.test(file_path, problem, config)
 
 
 @cli.command("submit", context_settings={"help_option_names": ["-h", "--help"]})
@@ -55,12 +55,12 @@ def test_cli(
 )
 @click.option("-c", "--color", type=bool)
 @click.option("-v", "--verbose", type=bool)
-def submit_cli(
+def submit(
     file_path: str,
-    problem: Optional[str],
-    force: Optional[bool],
-    color: Optional[bool],
-    verbose: Optional[bool],
+    problem: str | None,
+    force: bool | None,
+    color: bool | None,
+    verbose: bool | None,
 ):
     """Submit a solution to Kattis."""
     file_path = path.abspath(file_path)
@@ -75,4 +75,4 @@ def submit_cli(
     if verbose is not None:
         config.verbose = verbose
 
-    submit.submit(file_path, problem, config)
+    commands.submit.submit(file_path, problem, config)
