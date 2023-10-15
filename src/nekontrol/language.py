@@ -58,7 +58,7 @@ class Language:
         pass
 
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         raise NotImplementedError()
 
     def __enter__(self) -> Runnable:
@@ -92,7 +92,7 @@ class InterpretedLanguage(Language):
 
 class Python(InterpretedLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "Python 3"
 
     @property
@@ -110,7 +110,7 @@ class Python(InterpretedLanguage):
 
 class Lua(InterpretedLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "Lua"
 
     @property
@@ -120,7 +120,7 @@ class Lua(InterpretedLanguage):
 
 class JSNode(InterpretedLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "Node"
 
     @property
@@ -186,7 +186,7 @@ class CompiledLanguage(Language):
 
 class Cpp(CompiledLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "C++"
 
     @property
@@ -215,7 +215,7 @@ class Cpp(CompiledLanguage):
 
 class Rust(CompiledLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "Rust"
 
     @property
@@ -236,7 +236,7 @@ class Rust(CompiledLanguage):
 
 class Haskell(CompiledLanguage):
     @property
-    def full_name(self) -> str:
+    def kattis_name(self) -> str:
         return "Haskell"
 
     def prepare(self):

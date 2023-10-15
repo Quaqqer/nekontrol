@@ -115,7 +115,7 @@ def submit(file_path, problem, config):
     data = {
         "submit": "true",
         "submit_ctr": 2,
-        "language": lang.full_name,
+        "language": lang.kattis_name,
         "mainclass": None,  # TODO: support java, scala, kotlin
         "problem": problem,
         "tag": None,  # TODO: what is this?
