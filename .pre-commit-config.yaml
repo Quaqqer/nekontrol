@@ -7,3 +7,11 @@ repos:
     rev: 6.1.0
     hooks:
     -   id: flake8
+-   repo: local
+    hooks:
+    -   id: pyright
+        name: pyright
+        entry: poetry run pyright --warnings src
+        pass_filenames: false
+        language: system
+        types: [python]
