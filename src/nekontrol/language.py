@@ -57,6 +57,10 @@ class Language:
     def cleanup(self):
         pass
 
+    @property
+    def full_name(self) -> str:
+        raise NotImplementedError()
+
     def __enter__(self) -> Runnable:
         return self.prepare()
 
@@ -88,6 +92,10 @@ class InterpretedLanguage(Language):
 
 class Python(InterpretedLanguage):
     @property
+    def full_name(self) -> str:
+        return "Python 3"
+
+    @property
     def bins(self) -> list[str]:
         return [
             "pypy38",
@@ -102,11 +110,19 @@ class Python(InterpretedLanguage):
 
 class Lua(InterpretedLanguage):
     @property
+    def full_name(self) -> str:
+        return "Lua"
+
+    @property
     def bins(self):
         return ["lua", "luajit"]
 
 
 class JSNode(InterpretedLanguage):
+    @property
+    def full_name(self) -> str:
+        return "Node"
+
     @property
     def bins(self):
         return ["node"]
@@ -170,6 +186,10 @@ class CompiledLanguage(Language):
 
 class Cpp(CompiledLanguage):
     @property
+    def full_name(self) -> str:
+        return "C++"
+
+    @property
     def cmdline(self) -> list[str]:
         cmdline = [
             "c++",
@@ -195,6 +215,10 @@ class Cpp(CompiledLanguage):
 
 class Rust(CompiledLanguage):
     @property
+    def full_name(self) -> str:
+        return "Rust"
+
+    @property
     def cmdline(self):
         return [
             "rustc",
@@ -211,6 +235,10 @@ class Rust(CompiledLanguage):
 
 
 class Haskell(CompiledLanguage):
+    @property
+    def full_name(self) -> str:
+        return "Haskell"
+
     def prepare(self):
         self.temp_out_dir = tempfile.mkdtemp()
         return super().prepare()

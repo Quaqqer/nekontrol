@@ -8,8 +8,11 @@ from pathlib import Path
 class Config:
     cpp_libs_dir: str | None = None
     extra_flags: dict[str, list[str]] | None = None
+    kattis_username: str | None = None
+    kattis_token: str | None = None
     color: bool = sys.stdout.isatty()
     diff: bool = True
+    force: bool = False
     ignore_debug: bool = True
     verbose: bool = False
 

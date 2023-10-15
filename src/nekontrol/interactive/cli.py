@@ -1,11 +1,10 @@
 import os.path as path
+from typing import Optional
 
 import click
 
-from .. import language, problems, util
 from ..config import exec_config
-from . import run
-from .tasks import TaskContext
+from . import test, submit
 
 executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
 
@@ -16,26 +15,24 @@ def cli():
     ...
 
 
-@cli.command(context_settings={"help_option_names": ["-h", "--help"]})
+@cli.command("test", context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
 @click.option("-d", "--diff", type=bool)
 @click.option("-c", "--color", type=bool)
 @click.option("-v", "--verbose", type=bool)
 @click.option("--ignore-debug", type=bool)
-def test(
+def test_cli(
     file_path: str,
-    problem: str | None,
-    color: bool | None,
-    diff: bool | None,
-    ignore_debug: bool | None,
-    verbose: bool | None,
+    problem: Optional[str],
+    color: Optional[bool],
+    diff: Optional[bool],
+    ignore_debug: Optional[bool],
+    verbose: Optional[bool],
 ):
     """Run and test against sample and local test data."""
     file_path = path.abspath(file_path)
-    file_name = path.basename(file_path)
     file_dir = path.dirname(file_path)
-    file_base, extension = path.splitext(file_name)
 
     config = exec_config(file_dir)
     if color is not None:
@@ -47,26 +44,35 @@ def test(
     if verbose is not None:
         config.verbose = verbose
 
-    c = util.cw(config.color)
+    test.test(file_path, problem, config)
 
-    if problem is None:
-        if config.verbose:
-            print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
-        problem = file_base
 
-    with TaskContext() as tctx:
-        samples = problems.problem_samples(file_base, file_dir, config, tctx=tctx)
+@cli.command("submit", context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("file-path", metavar="FILE", type=executable_file)
+@click.option("-p", "--problem", type=str, help="The kattis problem name")
+@click.option(
+    "-f", "--force", type=bool, help="Submit even if sample verification fails"
+)
+@click.option("-c", "--color", type=bool)
+@click.option("-v", "--verbose", type=bool)
+def submit_cli(
+    file_path: str,
+    problem: Optional[str],
+    force: Optional[bool],
+    color: Optional[bool],
+    verbose: Optional[bool],
+):
+    """Submit a solution to Kattis."""
+    file_path = path.abspath(file_path)
+    file_dir = path.dirname(file_path)
 
-        if len(samples) == 0:
-            raise click.ClickException(f"Found no inputs to run for problem {problem}")
+    config = exec_config(file_dir)
 
-        lang = language.get_lang(file_path, config, tctx=tctx)
+    if color is not None:
+        config.color = color
+    if force is not None:
+        config.force = force
+    if verbose is not None:
+        config.verbose = verbose
 
-        if lang is None:
-            raise click.ClickException(
-                f"Language for file extension {extension} is not implemented."
-            )
-
-        with lang as runnable:
-            for sample in samples:
-                run.run(file_name, runnable, sample, config, tctx=tctx)
+    submit.submit(file_path, problem, config)
