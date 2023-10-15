@@ -1,9 +1,3 @@
-from . import run
-from . import submit
-from . import test
-
-__all__ = [
-    run.__name__,
-    submit.__name__,
-    test.__name__,
-]
+from . import run as run  # type: ignore # noqa
+from . import submit as submit  # type: ignore # noqa
+from . import test as test  # type: ignore # noqa
