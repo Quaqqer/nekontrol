@@ -1,12 +1,46 @@
-import os.path as path
-
 import click
 
+from nekontrol.config import Config, exec_config
 from nekontrol.console import setup_console
-from nekontrol.config import exec_config
+
 from . import commands
 
-executable_file = click.Path(exists=True, readable=True, file_okay=True, dir_okay=False)
+executable_file = click.Path(
+    exists=True, readable=True, file_okay=True, dir_okay=False, resolve_path=True
+)
+
+
+def config_parser(path_argument: str):
+    def inner(f):
+        @click.option("--diff/--no-diff", default=None, help="Display diff")
+        @click.option("--verbose/--no-verbose", default=None, help="Verbose output")
+        @click.option(
+            "--ignore-debug/--no-ignore-debug",
+            default=None,
+            help="Ignore lines starting with `debug`",
+        )
+        @click.option(
+            "--force/--no-force",
+            default=None,
+            help="Submit even if sample verification fails",
+        )
+        @click.pass_context
+        def wrapper(
+            ctx: click.Context,
+            *args,
+            **kwargs,
+        ):
+            config = exec_config(kwargs[path_argument])
+            for opt in ["diff", "ignore_debug", "verbose", "force"]:
+                v = kwargs.pop(opt)
+                if v is not None:
+                    assert hasattr(config, opt), f"{config} {opt}"
+                    config.__setattr__(opt, v)
+            return ctx.invoke(f, *args, config=config, **kwargs)
+
+        return wrapper
+
+    return inner
 
 
 @click.group()
@@ -18,29 +52,14 @@ def cli():
 @cli.command("test", context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
-@click.option("-d", "--diff", type=bool)
-@click.option("-v", "--verbose", type=bool)
-@click.option("--ignore-debug", type=bool)
+@config_parser("file_path")
 def test(
+    config: Config,
     file_path: str,
     problem: str | None,
-    diff: bool | None,
-    ignore_debug: bool | None,
-    verbose: bool | None,
 ):
     """Run and test against sample and local test data."""
     setup_console()
-
-    file_path = path.abspath(file_path)
-    file_dir = path.dirname(file_path)
-
-    config = exec_config(file_dir)
-    if diff is not None:
-        config.diff = diff
-    if ignore_debug is not None:
-        config.ignore_debug = ignore_debug
-    if verbose is not None:
-        config.verbose = verbose
 
     commands.test.test(file_path, problem, config)
 
@@ -48,27 +67,13 @@ def test(
 @cli.command("submit", context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
-@click.option(
-    "-f", "--force", type=bool, help="Submit even if sample verification fails"
-)
-@click.option("-v", "--verbose", type=bool)
+@config_parser("file_path")
 def submit(
+    config: Config,
     file_path: str,
     problem: str | None,
-    force: bool | None,
-    verbose: bool | None,
 ):
     """Submit a solution to Kattis."""
     setup_console()
-
-    file_path = path.abspath(file_path)
-    file_dir = path.dirname(file_path)
-
-    config = exec_config(file_dir)
-
-    if force is not None:
-        config.force = force
-    if verbose is not None:
-        config.verbose = verbose
 
     commands.submit.submit(file_path, problem, config)
