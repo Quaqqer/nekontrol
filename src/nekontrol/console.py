@@ -3,11 +3,10 @@ from rich.console import Console
 _console = None
 
 
-def setup_console(color: bool | None):
+def setup_console():
     global _console
     if _console is None:
-        color_system = None if color is False else "auto"
-        _console = Console(color_system=color_system)
+        _console = Console()
     return _console
 
 
