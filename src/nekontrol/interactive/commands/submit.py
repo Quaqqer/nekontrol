@@ -37,8 +37,10 @@ from lxml.html import fragment_fromstring
 
 import click
 import requests
+from rich.markup import escape
 
-from .. import language, util
+from nekontrol import language
+from nekontrol.console import get_console
 from . import test
 
 _HEADERS = {"User-Agent": "nekontrol/0.2.5"}
@@ -62,7 +64,7 @@ def login(user: str, token: str):
 def get_submission_id(response):
     m = re.search(r"Submission ID: (\d+)", response)
     if m is None:
-        print(response)
+        get_console().print(escape(response))
         raise click.ClickException("Couldn't find submission ID in response.")
     return m.group(1)
 
@@ -71,27 +73,27 @@ def submit(file_path, problem, config):
     file_name = path.basename(file_path)
     file_base, extension = path.splitext(file_name)
 
-    c = util.cw(config.color)
+    c = get_console()
 
     if problem is None:
         if config.verbose:
-            print(c(f"No problem name specified, guessing '{file_base}'", "yellow"))
+            c.print(
+                f"[yellow]No problem name specified, guessing '{escape(file_base)}'"
+            )
         problem = file_base
 
     lang = language.get_lang(file_path, config)
 
     if lang is None:
         raise click.ClickException(
-            f"Language for file extension {extension} is not implemented."
+            f"Language for file extension {escape(extension)} is not implemented."
         )
 
     # test before submitting
     test.test(file_path, problem, config)
 
     if not config.force:
-        ans = input("Submit? [Y/n] ")
-        if ans.lower() == "n":
-            return
+        click.confirm("Submit?", abort=True)
 
     # login to kattis
     if config.kattis_username is None:
@@ -115,7 +117,7 @@ def submit(file_path, problem, config):
     data = {
         "submit": "true",
         "submit_ctr": 2,
-        "language": lang.full_name,
+        "language": lang.kattis_name,
         "mainclass": None,  # TODO: support java, scala, kotlin
         "problem": problem,
         "tag": None,  # TODO: what is this?
@@ -142,11 +144,13 @@ def submit(file_path, problem, config):
         raise click.ClickException(f"Submission failed ({r.status_code}):\n{r.text}")
 
     submission_id = get_submission_id(r.text)
-    poll_submission(c, submission_id, login_cookies)
+    poll_submission(submission_id, login_cookies)
 
 
-def poll_submission(c, submission_id, login_cookies):
+def poll_submission(submission_id, login_cookies):
     """Poll a submission's status until it isn't running."""
+
+    c = get_console()
 
     _RUNNING_STATUS = 5
     _COMPILE_ERROR_STATUS = 8
@@ -191,11 +195,11 @@ def poll_submission(c, submission_id, login_cookies):
         status_text = _STATUS_MAP.get(status_id, f"Unknown status {status_id}")
 
         if status_id == _COMPILE_ERROR_STATUS:
-            print(c(status_text, "red"))
+            c.print(f"[red]{status_text}")
             try:
                 root = fragment_fromstring(status["feedback_html"], create_parent=True)
                 error = root.find(".//pre").text
-                print(c(error, "red"))
+                c.print(f"[red]{escape(error)}")
             except Exception:
                 pass
         elif status_id < _RUNNING_STATUS:
@@ -227,7 +231,7 @@ def poll_submission(c, submission_id, login_cookies):
             except Exception:
                 pass
             if status_id != _COMPILE_ERROR_STATUS:
-                print(c(status_text, "green" if success else "red"))
+                c.print(f"[{'green' if success else 'red'}]{status_text}")
             return success
 
         time.sleep(0.25)

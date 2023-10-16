@@ -5,10 +5,10 @@ from rich.markup import escape
 
 from nekontrol.interactive.tasks import TaskContext
 
-from .. import compare, util
-from ..config import Config
-from ..language import Runnable
-from ..problems.sample import ProblemSample
+from nekontrol import compare, util
+from nekontrol.config import Config
+from nekontrol.language import Runnable
+from nekontrol.problems.sample import ProblemSample
 
 
 def run(
@@ -77,4 +77,4 @@ def run(
 
     if result.stderr:
         c.print("[yellow]Got stderr:")
-        print(escape(util.indented(result.stderr)))
+        c.print(escape(util.indented(result.stderr)))
