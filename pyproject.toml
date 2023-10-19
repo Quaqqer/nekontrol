@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "nekontrol"
 version = "0.2.5"
-description = "A program for testing kattis solutions with input and output."
+description = "A program for testing Kattis solutions with input and output."
 authors = [
     "Emanuel S <emanuel@empa.xyz>",
 ]
@@ -9,10 +9,6 @@ readme = "README.md"
 homepage = "https://github.com/Quaqqer/nekontrol"
 repository = "https://github.com/Quaqqer/nekontrol"
 keywords = ["kattis", "competitive programming"]
-packages = [
-    { include = "nekontrol", from = "src" },
-]
-include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
