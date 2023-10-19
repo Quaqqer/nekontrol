@@ -8,7 +8,7 @@ authors = [
 readme = "README.md"
 homepage = "https://github.com/Quaqqer/nekontrol"
 repository = "https://github.com/Quaqqer/nekontrol"
-keywords = ["kattis", "competetive programming"]
+keywords = ["kattis", "competitive programming"]
 packages = [
     { include = "nekontrol", from = "src" },
 ]
