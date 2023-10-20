@@ -47,9 +47,13 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           poetry install
 
-      - name: Check formatting
+      - name: Check black formatting
         run: |
           poetry run black --check .
+
+      - name: Check isort formatting
+        run: |
+          poetry run isort --check .
 
   test:
     name: Test

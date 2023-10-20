@@ -33,14 +33,15 @@
 import os.path as path
 import re
 import time
-from lxml.html import fragment_fromstring
 
 import click
 import requests
+from lxml.html import fragment_fromstring
 from rich.markup import escape
 
 from nekontrol import language
 from nekontrol.console import get_console
+
 from . import test
 
 _HEADERS = {"User-Agent": "nekontrol/0.2.5"}
