@@ -9,6 +9,9 @@ readme = "README.md"
 homepage = "https://github.com/Quaqqer/nekontrol"
 repository = "https://github.com/Quaqqer/nekontrol"
 keywords = ["kattis", "competitive programming"]
+packages = [
+    { include = "nekontrol", from = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
