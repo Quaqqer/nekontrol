@@ -1,4 +1,7 @@
+import shutil
 from os import path
+
+import pytest
 
 from nekontrol.config import Config
 from nekontrol.language import (
@@ -33,25 +36,38 @@ ins_and_outs = [
 ]
 
 
+def check_available(lang, bins):
+    for binary in bins:
+        if shutil.which(binary) is not None:
+            return
+    pytest.skip(f"no binary for {lang} is available")
+
+
 def test_cpp():
+    check_available("C++", ["c++"])
     language_test(Cpp(path.join(problems_dir, "test.cpp"), cfg))
 
 
 def test_python():
+    check_available("Python", Python.bins)
     language_test(Python(path.join(problems_dir, "test.py"), cfg))
 
 
 def test_haskell():
+    check_available("Haskell", ["ghc"])
     language_test(Haskell(path.join(problems_dir, "test.hs"), cfg))
 
 
 def test_rust():
+    check_available("Rust", ["rustc"])
     language_test(Rust(path.join(problems_dir, "test.rs"), cfg))
 
 
 def test_lua():
+    check_available("Lua", Lua.bins)
     language_test(Lua(path.join(problems_dir, "test.lua"), cfg))
 
 
 def test_node():
+    check_available("Node", JSNode.bins)
     language_test(JSNode(path.join(problems_dir, "test.js"), cfg))

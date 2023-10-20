@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from os import path
-from typing import Callable, Union, assert_never
+from typing import Callable, ClassVar, Protocol, Union, assert_never
 
 from click import ClickException
 
@@ -43,7 +43,12 @@ class Runnable:
         return self._run(input_file)
 
 
-class Language:
+class Language(Protocol):
+    kattis_name: ClassVar[str]
+    source_file: str
+    config: Config
+    tctx: TaskContext | None
+
     def __init__(
         self, source_file: str, config: Config, tctx: TaskContext | None = None
     ):
@@ -52,14 +57,10 @@ class Language:
         self.tctx = tctx
 
     def prepare(self) -> Runnable:
-        raise NotImplementedError()
+        ...
 
     def cleanup(self):
         pass
-
-    @property
-    def kattis_name(self) -> str:
-        raise NotImplementedError()
 
     def __enter__(self) -> Runnable:
         return self.prepare()
@@ -68,10 +69,9 @@ class Language:
         self.cleanup()
 
 
-class InterpretedLanguage(Language):
-    @property
-    def bins(self) -> list[str]:
-        raise NotImplementedError()
+class InterpretedLanguage(Language, Protocol):
+    bins: ClassVar[list[str]]
+    bin: str
 
     def __init__(
         self, source_file: str, config: Config, tctx: TaskContext | None = None
@@ -91,47 +91,34 @@ class InterpretedLanguage(Language):
 
 
 class Python(InterpretedLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "Python 3"
-
-    @property
-    def bins(self) -> list[str]:
-        return [
-            "pypy38",
-            "pypy3.8",
-            "pypy3",
-            "python38",
-            "python3.8",
-            "python3",
-            "python",
-        ]
+    bins = [
+        "pypy38",
+        "pypy3.8",
+        "pypy3",
+        "python38",
+        "python3.8",
+        "python3",
+        "python",
+    ]
+    kattis_name = "Python 3"
 
 
 class Lua(InterpretedLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "Lua"
-
-    @property
-    def bins(self):
-        return ["lua", "luajit"]
+    bins = ["lua", "luajit"]
+    kattis_name = "Lua"
 
 
 class JSNode(InterpretedLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "Node"
-
-    @property
-    def bins(self):
-        return ["node"]
+    bins = ["node"]
+    kattis_name = "Node"
 
 
-class CompiledLanguage(Language):
+class CompiledLanguage(Language, Protocol):
+    compiled_output: str
+
     @property
     def cmdline(self) -> list[str]:
-        raise NotImplementedError()
+        ...
 
     def prepare(self) -> Runnable:
         task = (
@@ -185,9 +172,7 @@ class CompiledLanguage(Language):
 
 
 class Cpp(CompiledLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "C++"
+    kattis_name = "C++"
 
     @property
     def cmdline(self) -> list[str]:
@@ -214,9 +199,7 @@ class Cpp(CompiledLanguage):
 
 
 class Rust(CompiledLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "Rust"
+    kattis_name = "Rust"
 
     @property
     def cmdline(self):
@@ -235,9 +218,7 @@ class Rust(CompiledLanguage):
 
 
 class Haskell(CompiledLanguage):
-    @property
-    def kattis_name(self) -> str:
-        return "Haskell"
+    kattis_name = "Haskell"
 
     def prepare(self):
         self.temp_out_dir = tempfile.mkdtemp()
