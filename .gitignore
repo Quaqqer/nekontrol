@@ -1,3 +1,7 @@
+# Neovim exrc
+.nvim.lua
+
+# Direnv
 .envrc
 .direnv/
 

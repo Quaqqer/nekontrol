@@ -5,8 +5,14 @@ let
     pyproject = ./pyproject.toml;
     poetrylock = ./poetry.lock;
     editablePackageSources = { nekontrol = ./src; };
-    checkGroups = [ ];
-    groups = [ ];
+
+    # `pyright` in this shell will not find packages, run `poetry run pyright` instead
+    # If using neovim and lspconfig, add this to an exrc:
+    # ```py
+    # require('lspconfig').pyright.setup({ cmd = { 'poetry', 'run', 'pyright-langserver', '--stdio' } })
+    # ```
+    checkGroups = [ "dev" ];
+    groups = [ "dev" ];
   };
 
   test_langs =
