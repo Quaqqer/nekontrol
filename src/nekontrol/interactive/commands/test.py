@@ -27,14 +27,12 @@ def test(file_path, problem, config):
         if len(samples) == 0:
             raise click.ClickException(f"Found no inputs to run for problem {problem}")
 
-        lang = language.get_lang(file_path)
+        lang = language.get_lang(file_path, config, tctx=tctx)
 
         if lang is None:
             raise click.ClickException(
                 f"Language for file extension {extension} is not implemented."
             )
-
-        lang = lang(file_path, config, tctx=tctx)
 
         with lang as runnable:
             for sample in samples:

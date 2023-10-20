@@ -1,11 +1,10 @@
-from abc import ABC
 import os
 import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
 from os import path
-from typing import Callable, ClassVar, Union, assert_never
+from typing import Callable, ClassVar, Protocol, Union, assert_never
 
 from click import ClickException
 
@@ -44,8 +43,11 @@ class Runnable:
         return self._run(input_file)
 
 
-class Language(ABC):
+class Language(Protocol):
     kattis_name: ClassVar[str]
+    source_file: str
+    config: Config
+    tctx: TaskContext | None
 
     def __init__(
         self, source_file: str, config: Config, tctx: TaskContext | None = None
@@ -55,7 +57,7 @@ class Language(ABC):
         self.tctx = tctx
 
     def prepare(self) -> Runnable:
-        raise NotImplementedError()
+        ...
 
     def cleanup(self):
         pass
@@ -67,8 +69,9 @@ class Language(ABC):
         self.cleanup()
 
 
-class InterpretedLanguage(Language):
+class InterpretedLanguage(Language, Protocol):
     bins: ClassVar[list[str]]
+    bin: str
 
     def __init__(
         self, source_file: str, config: Config, tctx: TaskContext | None = None
@@ -110,10 +113,12 @@ class JSNode(InterpretedLanguage):
     kattis_name = "Node"
 
 
-class CompiledLanguage(Language, ABC):
+class CompiledLanguage(Language, Protocol):
+    compiled_output: str
+
     @property
     def cmdline(self) -> list[str]:
-        raise NotImplementedError()
+        ...
 
     def prepare(self) -> Runnable:
         task = (
@@ -235,21 +240,23 @@ class Haskell(CompiledLanguage):
         ]
 
 
-def get_lang(source_file: str) -> type[Language] | None:
+def get_lang(
+    source_file: str, config: Config, tctx: TaskContext | None = None
+) -> Language | None:
     _, ext = path.splitext(source_file)
     match ext:
         case ".cc" | ".cpp" | ".cxx" | ".c++":
-            return Cpp
+            return Cpp(source_file, config, tctx=tctx)
         case ".py":
-            return Python
+            return Python(source_file, config, tctx=tctx)
         case ".hs":
-            return Haskell
+            return Haskell(source_file, config, tctx=tctx)
         case ".rs":
-            return Rust
+            return Rust(source_file, config, tctx=tctx)
         case ".lua":
-            return Lua
+            return Lua(source_file, config, tctx=tctx)
         case ".js":
-            return JSNode
+            return JSNode(source_file, config, tctx=tctx)
         case _:
             return None
 
