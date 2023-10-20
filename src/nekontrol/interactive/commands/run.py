@@ -3,10 +3,9 @@ import time
 from rich.console import Console
 from rich.markup import escape
 
-from nekontrol.interactive.tasks import TaskContext
-
 from nekontrol import compare, util
 from nekontrol.config import Config
+from nekontrol.interactive.tasks import TaskContext
 from nekontrol.language import Runnable
 from nekontrol.problems.sample import ProblemSample
 
