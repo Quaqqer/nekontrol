@@ -82,12 +82,13 @@ def submit(file_path, problem, config):
             )
         problem = file_base
 
-    lang = language.get_lang(file_path, config)
+    lang = language.get_lang(file_path)
 
     if lang is None:
         raise click.ClickException(
             f"Language for file extension {escape(extension)} is not implemented."
         )
+    lang = lang(file_path, config)
 
     # test before submitting
     test.test(file_path, problem, config)
