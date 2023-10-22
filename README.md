@@ -53,10 +53,9 @@ and run!
 
 ## Requirements
 
-- The requirements of this program is only having python 3.10 or newer as well
-  pip
-- A half decent terminal, almost anything other than cmd.exe on windows will
-  work
+- Python 3.11 or newer as well as pip.
+- A half decent terminal. Almost anything other than cmd.exe on windows will
+  work.
 
 ## Install or update
 
@@ -67,6 +66,15 @@ pip install -U nekontrol
 ```
 
 Now it should hopefully work, enjoy!
+
+### Arch
+
+On Arch, normal pip install will fail with `error:
+externally-managed-environment`. You can either use `python-pipx` to setup a
+separate virtual environment, as recommended by the error message, or you can
+install the AUR package
+[`nekontrol-git`](https://aur.archlinux.org/packages/nekontrol-git) which will
+use shared system packages.
 
 ### Nix
 
