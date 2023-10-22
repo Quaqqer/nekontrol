@@ -53,7 +53,7 @@ and run!
 
 ## Requirements
 
-- Python 3.10 or newer as well as pip.
+- Python 3.11 or newer as well as pip.
 - A half decent terminal. Almost anything other than cmd.exe on windows will
   work.
 
@@ -67,11 +67,6 @@ pip install -U nekontrol
 
 Now it should hopefully work, enjoy!
 
-### Nix
-
-There is a flake for Nix users, but if you use Nix I trust you know how to use
-flakes.
-
 ### Arch
 
 On Arch, normal pip install will fail with `error:
@@ -80,6 +75,11 @@ separate virtual environment, as recommended by the error message, or you can
 install the AUR package
 [`nekontrol-git`](https://aur.archlinux.org/packages/nekontrol-git) which will
 use shared system packages.
+
+### Nix
+
+There is a flake for Nix users, but if you use Nix I trust you know how to use
+flakes.
 
 ## Other
 
