@@ -33,13 +33,18 @@
 import os.path as path
 import re
 import time
+from dataclasses import dataclass
+from typing import TypeAlias, assert_never
 
 import click
 import requests
 from lxml.html import fragment_fromstring
+from requests.sessions import RequestsCookieJar
+from rich.live import Live
 from rich.markup import escape
 
 from nekontrol import language
+from nekontrol.config import Config
 from nekontrol.console import get_console
 
 from . import test
@@ -47,7 +52,7 @@ from . import test
 _HEADERS = {"User-Agent": "nekontrol/0.2.5"}
 
 
-def login(user: str, token: str):
+def login(user: str, token: str) -> RequestsCookieJar:
     r = requests.post(
         "https://open.kattis.com/login",
         data={
@@ -62,15 +67,16 @@ def login(user: str, token: str):
     return r.cookies
 
 
-def get_submission_id(response):
-    m = re.search(r"Submission ID: (\d+)", response)
+def get_submission_id(response_text: str) -> str:
+    m = re.search(r"Submission ID: (\d+)", response_text)
     if m is None:
-        get_console().print(escape(response))
-        raise click.ClickException("Couldn't find submission ID in response.")
+        raise click.ClickException(
+            f"Couldn't find submission ID in response: {response_text}."
+        )
     return m.group(1)
 
 
-def submit(file_path, problem, config):
+def submit(file_path: str, problem: str | None, config: Config):
     file_name = path.basename(file_path)
     file_base, extension = path.splitext(file_name)
 
@@ -145,94 +151,177 @@ def submit(file_path, problem, config):
         raise click.ClickException(f"Submission failed ({r.status_code}):\n{r.text}")
 
     submission_id = get_submission_id(r.text)
-    poll_submission(submission_id, login_cookies)
+    live_poll_submission(submission_id, login_cookies)
 
 
-def poll_submission(submission_id, login_cookies):
-    """Poll a submission's status until it isn't running."""
+STATUS_NEW = 0
+STATUS_WAIT_COMPILE = 2
+STATUS_COMPILING = 3
+STATUS_WAIT_RUN = 4
+STATUS_RUNNING = 5
+STATUS_JUDGE_ERROR = 6
+STATUS_SUBMISSION_ERROR = 7
+STATUS_COMPILE_ERROR = 8
+STATUS_RUNTIME_ERROR = 9
+STATUS_MEMORY_EXCEEDED = 10
+STATUS_OUTPUT_EXCEEDED = 11
+STATUS_TIME_EXCEEDED = 12
+STATUS_ILLEGAL_FUNCTION = 13
+STATUS_WRONG_ANSWER = 14
+STATUS_ACCEPTED = 16
 
-    c = get_console()
+STATUS_MESSAGES = {
+    STATUS_NEW: "New",
+    STATUS_WAIT_COMPILE: "Waiting for compile",
+    STATUS_COMPILING: "Compiling",
+    STATUS_WAIT_RUN: "Waiting for run",
+    STATUS_RUNNING: "Running",
+    STATUS_JUDGE_ERROR: "Judge Error",
+    STATUS_SUBMISSION_ERROR: "Submission Error",
+    STATUS_COMPILE_ERROR: "Compile Error",
+    STATUS_RUNTIME_ERROR: "Run Time Error",
+    STATUS_MEMORY_EXCEEDED: "Memory Limit Exceeded",
+    STATUS_OUTPUT_EXCEEDED: "Output Limit Exceeded",
+    STATUS_TIME_EXCEEDED: "Time Limit Exceeded",
+    STATUS_ILLEGAL_FUNCTION: "Illegal Function",
+    STATUS_WRONG_ANSWER: "Wrong Answer",
+    STATUS_ACCEPTED: "Accepted",
+}
 
-    _RUNNING_STATUS = 5
-    _COMPILE_ERROR_STATUS = 8
-    _ACCEPTED_STATUS = 16
-    _STATUS_MAP = {
-        0: "New",  # <invalid value>
-        1: "New",
-        2: "Waiting for compile",
-        3: "Compiling",
-        4: "Waiting for run",
-        _RUNNING_STATUS: "Running",
-        6: "Judge Error",
-        7: "Submission Error",
-        _COMPILE_ERROR_STATUS: "Compile Error",
-        9: "Run Time Error",
-        10: "Memory Limit Exceeded",
-        11: "Output Limit Exceeded",
-        12: "Time Limit Exceeded",
-        13: "Illegal Function",
-        14: "Wrong Answer",
-        # 15: '<invalid value>',
-        _ACCEPTED_STATUS: "Accepted",
-    }
+
+@dataclass
+class PollStatusPreparing:
+    msg: str
+
+
+@dataclass
+class PollStatusPrepareErr:
+    msg: str
+
+
+@dataclass
+class PollStatusRunning:
+    total_test_cases: int
+    successful_test_cases: int
+
+
+@dataclass
+class PollStatusAccepted:
+    total_test_cases: int
+
+
+@dataclass
+class PollStatusErr:
+    status: int
+    total_test_cases: int
+    successful_test_cases: int
+    msg: str
+
+
+PollStatus: TypeAlias = "PollStatusPreparing | PollStatusPrepareErr | PollStatusRunning | PollStatusAccepted | PollStatusErr"  # noqa
+
+
+def poll(submission_id: str, login_cookies: RequestsCookieJar) -> PollStatus:
+    """Poll a submission status"""
 
     submission_url = f"https://open.kattis.com/submissions/{submission_id}"
+    submission_response = requests.get(
+        submission_url + "?json", cookies=login_cookies, headers=_HEADERS
+    )
 
-    while True:
-        submission_response = requests.get(
-            submission_url + "?json", cookies=login_cookies, headers=_HEADERS
-        )
-        if submission_response.status_code != 200:
-            raise click.ClickException(
-                "Error when requesting submission response ({}):\n{}".format(
-                    submission_response.status_code, submission_response.text
-                )
+    if submission_response.status_code != 200:
+        raise click.ClickException(
+            "Error when requesting submission response ({}):\n{}".format(
+                submission_response.status_code, submission_response.text
             )
-        status = submission_response.json()
-        status_id = status["status_id"]
-        testcases_done = status["testcase_index"]
-        testcases_total = status["row_html"].count("<i") - 1
+        )
 
-        status_text = _STATUS_MAP.get(status_id, f"Unknown status {status_id}")
+    status = submission_response.json()
+    status_id = status["status_id"]
+    testcases_done = status["testcase_index"] - 1
+    testcases_total = status["row_html"].count("<i") - 1
 
-        if status_id == _COMPILE_ERROR_STATUS:
-            c.print(f"[red]{status_text}")
-            try:
-                root = fragment_fromstring(status["feedback_html"], create_parent=True)
-                error = root.find(".//pre").text
-                c.print(f"[red]{escape(error)}")
-            except Exception:
-                pass
-        elif status_id < _RUNNING_STATUS:
-            print(f"{status_text}...")
-        elif status_id == _RUNNING_STATUS:
-            print("Test cases: ", end="")
+    if status_id == STATUS_COMPILE_ERROR:
+        msg = f"[red]{STATUS_MESSAGES[status_id]}[/red]"
 
-            if testcases_total == 0:
-                print("???")
-            else:
-                s = "." * (testcases_done - 1)
-                if status_id == _RUNNING_STATUS:
-                    s += "?"
-                elif status_id == _ACCEPTED_STATUS:
-                    s += "."
-                else:
-                    s += "x"
+        try:
+            root = fragment_fromstring(status["feedback_html"], create_parent=True)
+            error = root.find(".//pre").text
+            msg += f"\n[red]{escape(error)}[/red]"
+        except Exception:
+            pass
 
-                print(
-                    f"[{s:<{testcases_total}}]  {testcases_done}/{testcases_total}",
-                    testcases_total,
-                )
-        else:
-            success = status_id == _ACCEPTED_STATUS
-            try:
-                root = fragment_fromstring(status["row_html"], create_parent=True)
-                cpu_time = root.find('.//*[@data-type="cpu"]').text
-                status_text += " (" + cpu_time + ")"
-            except Exception:
-                pass
-            if status_id != _COMPILE_ERROR_STATUS:
-                c.print(f"[{'green' if success else 'red'}]{status_text}")
-            return success
+        return PollStatusPrepareErr(msg=msg)
+    elif status_id < STATUS_RUNNING:
+        return PollStatusPreparing(f"{STATUS_MESSAGES[status_id]}")
+    elif status_id == STATUS_RUNNING:
+        return PollStatusRunning(
+            total_test_cases=testcases_total, successful_test_cases=testcases_done
+        )
+    elif status_id == STATUS_ACCEPTED:
+        return PollStatusAccepted(total_test_cases=testcases_total)
+    else:  # some kind of error occurred
+        msg = STATUS_MESSAGES[status_id]
 
-        time.sleep(0.25)
+        try:  # to get cpu time if possible
+            root = fragment_fromstring(status["row_html"], create_parent=True)
+            cpu_time = root.find('.//*[@data-type="cpu"]').text
+            msg += " (" + cpu_time + ")"
+        except Exception:
+            pass
+
+        return PollStatusErr(
+            status=status_id,
+            total_test_cases=testcases_total,
+            successful_test_cases=testcases_done,
+            msg=msg,
+        )
+
+
+def live_poll_submission(submission_id, login_cookies):
+    """Poll a submission's status until it isn't running."""
+
+    with Live() as live:
+        while True:
+            status = poll(submission_id, login_cookies)
+
+            check = "[green]✓[/green]"
+            cross = "[red]✕[/red]"
+            quest = "[blue]?[/blue]"
+
+            match status:
+                case PollStatusPreparing(msg=msg):
+                    live.update(f"Preparing: {escape(msg)}...")
+                case PollStatusPrepareErr(msg=msg):
+                    live.update(f"Preparation error: {escape(msg)}")
+                    live.stop()
+                    break
+                case PollStatusRunning(
+                    total_test_cases=total_test_cases,
+                    successful_test_cases=successful_test_cases,
+                ):
+                    rest = total_test_cases - successful_test_cases
+                    live.update(
+                        f"Running: {check * successful_test_cases + quest * rest}"
+                    )
+                case PollStatusAccepted(total_test_cases=total_test_cases):
+                    live.update(f"Accepted: {check * total_test_cases}")
+                    live.stop()
+                    break
+                case PollStatusErr(
+                    total_test_cases=total_test_cases,
+                    successful_test_cases=successful_test_cases,
+                    msg=msg,
+                ):
+                    rest = total_test_cases - successful_test_cases - 1
+                    status = (
+                        f"Error: {check * successful_test_cases + cross + quest * rest}"
+                        f"\n{escape(msg)}"
+                    )
+                    live.update(status)
+                    live.stop()
+                    break
+                case _:
+                    assert_never(status)
+
+            time.sleep(0.25)
