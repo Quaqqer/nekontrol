@@ -240,6 +240,7 @@ class Haskell(CompiledLanguage):
             self.compiled_output,
         ]
 
+        # Arch linux requires dynamic linking for GHC
         if (
             platform.system() == "Linux"
             and platform.freedesktop_os_release()["ID"] == "arch"

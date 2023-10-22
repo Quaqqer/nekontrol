@@ -190,11 +190,6 @@ STATUS_MESSAGES = {
 
 
 @dataclass
-class PollStatusAccepted:
-    total_test_cases: int
-
-
-@dataclass
 class PollStatusPreparing:
     msg: str
 
@@ -208,6 +203,11 @@ class PollStatusPrepareErr:
 class PollStatusRunning:
     total_test_cases: int
     successful_test_cases: int
+
+
+@dataclass
+class PollStatusAccepted:
+    total_test_cases: int
 
 
 @dataclass
