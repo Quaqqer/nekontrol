@@ -101,7 +101,10 @@ def submit(file_path: str, problem: str | None, config: Config, yes: bool):
     if not config.force:
         test.test(file_path, problem, config)
 
-    if not (yes or rich.prompt.Confirm("Are you sure you want to submit?")):
+    if not (
+        yes
+        or rich.prompt.Confirm.ask("Are you sure you want to submit?", default=False)
+    ):
         return
 
     # login to kattis
