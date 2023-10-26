@@ -1,69 +1,33 @@
 import difflib
-import re
 
-import termcolor
-
-from . import util
-from .config import Config
-
-debug_regex = re.compile("^(?:debug|dbg)", re.IGNORECASE)
-inline_debug_regex = re.compile(r"\((?:dbg|debug)[^)]*\)", re.IGNORECASE)
+from rich.markup import escape
 
 
-def compare_outputs(
-    output: str, expected_output: str, input: str, config: Config
-) -> str | bool:
-    c = util.cw(config.color)
+def rich_diff_line(line: str) -> str:
+    prefix, rest = line[:2], line[2:]
+    match prefix:
+        case "+ " | "- ":
+            return f"[red]{prefix}[/red]{escape(rest)}"
+        case "^ ":
+            return f"[yellow]{prefix}[/yellow]{escape(rest)}"
+        case _:
+            return escape(line)
 
-    found_debug = False
 
-    if config.ignore_debug:
-        output_lines = []
-        for line in output.splitlines():
-            if debug_regex.match(line):
-                found_debug = True
-                continue
-
-            inline_line = inline_debug_regex.sub("", line)
-
-            if len(inline_line) != len(line):
-                found_debug = True
-            line = inline_line
-
-            output_lines.append(line)
-    else:
-        output_lines = output.splitlines()
-
+def diff(expected: str, actual: str) -> str | None:
     differ = difflib.Differ()
-    diff = list(
-        differ.compare(
-            list(map(str.rstrip, expected_output.splitlines())),
-            list(map(str.rstrip, output_lines)),
-        )
-    )
 
-    if all(d.startswith("  ") for d in diff):
-        return found_debug
-    else:
-        return (
-            c("Input:", "yellow")
-            + "\n"
-            + util.indented(input)
-            + "\n"
-            + c("Diff:", "yellow")
-            + "\n"
-            + "\n".join(color_diff(diff) if config.color else diff)
-        )
+    is_diff = False
 
+    rich_diff_lines = []
+    for line in differ.compare(
+        [l.rstrip() for l in expected.splitlines()],
+        [l.rstrip() for l in actual.splitlines()],
+    ):
+        if not line[:2] == "  ":
+            is_diff = True
 
-def color_diff(diff: list[str]) -> list[str]:
-    def color_line(line: str) -> str:
-        match line[0:2]:
-            case "+ " | "- " as start:
-                return termcolor.colored(start, "red") + line[2:]
-            case "? " as start:
-                return termcolor.colored(start, "yellow") + line[2:]
-            case _:
-                return line
+        rich_diff_lines.append(rich_diff_line(line))
 
-    return list(map(color_line, diff))
+    if is_diff:
+        return "\n".join(rich_diff_lines)

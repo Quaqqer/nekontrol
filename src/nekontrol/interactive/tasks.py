@@ -1,11 +1,13 @@
+from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TaskID, TextColumn
 
 
 class TaskContext:
-    def __init__(self):
+    def __init__(self, console: Console = Console()):
         self.p = Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
+            console=console,
         )
 
     def __enter__(self, *args, **kwargs):
