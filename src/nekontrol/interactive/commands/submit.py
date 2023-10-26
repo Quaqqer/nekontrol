@@ -38,14 +38,15 @@ from typing import TypeAlias, assert_never
 
 import click
 import requests
+import rich.prompt
 from lxml.html import fragment_fromstring
 from requests.sessions import RequestsCookieJar
-from rich.live import Live
 from rich.markup import escape
 
 from nekontrol import language
 from nekontrol.config import Config
 from nekontrol.console import get_console
+from nekontrol.interactive.tasks import Task, TaskContext
 
 from . import test
 
@@ -76,7 +77,7 @@ def get_submission_id(response_text: str) -> str:
     return m.group(1)
 
 
-def submit(file_path: str, problem: str | None, config: Config):
+def submit(file_path: str, problem: str | None, config: Config, yes: bool):
     file_name = path.basename(file_path)
     file_base, extension = path.splitext(file_name)
 
@@ -97,10 +98,11 @@ def submit(file_path: str, problem: str | None, config: Config):
         )
 
     # test before submitting
-    test.test(file_path, problem, config)
-
     if not config.force:
-        click.confirm("Submit?", abort=True)
+        test.test(file_path, problem, config)
+
+    if not (yes or rich.prompt.Confirm("Are you sure you want to submit?")):
+        return
 
     # login to kattis
     if config.kattis_username is None:
@@ -281,45 +283,68 @@ def poll(submission_id: str, login_cookies: RequestsCookieJar) -> PollStatus:
 def live_poll_submission(submission_id, login_cookies):
     """Poll a submission's status until it isn't running."""
 
-    with Live() as live:
+    with TaskContext() as tctx:
+        prepare_task: Task = tctx.add_task("Preparing: New...")
+        running_task: Task | None = None
+
         while True:
             status = poll(submission_id, login_cookies)
 
-            check = "[green]✓[/green]"
-            cross = "[red]✕[/red]"
-            quest = "[blue]?[/blue]"
+            check = r"[green]\[✓] [/green]"
+            cross = r"[red]\[✕] [/red]"
+            quest = r"[blue]\[?] [/blue]"
 
             match status:
                 case PollStatusPreparing(msg=msg):
-                    live.update(f"Preparing: {escape(msg)}...")
+                    prepare_task.msg = f"Preparing: {escape(msg)}..."
                 case PollStatusPrepareErr(msg=msg):
-                    live.update(f"Preparation error: {escape(msg)}")
-                    live.stop()
+                    prepare_task.fail(f"Preparing: {msg}")
                     break
                 case PollStatusRunning(
                     total_test_cases=total_test_cases,
                     successful_test_cases=successful_test_cases,
                 ):
+                    prepare_task.ok("Preparing: Ok")
+
                     rest = total_test_cases - successful_test_cases
-                    live.update(
-                        f"Running: {check * successful_test_cases + quest * rest}"
-                    )
+                    checks = check * successful_test_cases + quest * rest
+                    msg = f"Running: {checks}"
+
+                    if not running_task:
+                        running_task = tctx.add_task(msg)
+                    else:
+                        running_task.msg = msg
                 case PollStatusAccepted(total_test_cases=total_test_cases):
-                    live.update(f"Accepted: {check * total_test_cases}")
-                    live.stop()
+                    prepare_task.ok("Preparing: Ok")
+
+                    msg = f"Running: {check * total_test_cases}"
+                    if running_task:
+                        running_task.ok(msg)
+                    else:
+                        running_task = tctx.add_task(msg)
+                        running_task.ok()
                     break
                 case PollStatusErr(
                     total_test_cases=total_test_cases,
                     successful_test_cases=successful_test_cases,
-                    msg=msg,
+                    msg=status_err,
                 ):
+                    prepare_task.ok("Preparing: Ok")
+
                     rest = total_test_cases - successful_test_cases - 1
-                    status = (
-                        f"Error: {check * successful_test_cases + cross + quest * rest}"
-                        f"\n{escape(msg)}"
+                    checks = check * successful_test_cases + cross + quest * rest
+                    msg = f"Running: {checks}"
+
+                    if running_task:
+                        running_task.fail(msg)
+                    else:
+                        running_task = tctx.add_task(msg)
+                        running_task.fail()
+                    c = tctx.console
+                    c.print(
+                        f"Error on test case {successful_test_cases + 1}:"
+                        f" {escape(status_err)}"
                     )
-                    live.update(status)
-                    live.stop()
                     break
                 case _:
                     assert_never(status)

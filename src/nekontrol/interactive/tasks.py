@@ -26,17 +26,39 @@ class TaskContext:
         t_id = self.p.add_task(msg)
         return Task(t_id, self, msg)
 
+    def update_task(self, task_id: TaskID, *args, **kwargs):
+        self.p.update(task_id, *args, **kwargs)
+
+    @property
+    def console(self) -> Console:
+        return self.p.console
+
 
 class Task:
     def __init__(self, task_id: TaskID, ctx: TaskContext, msg: str):
         self._task_id = task_id
         self._ctx = ctx
         self._msg = msg
+        self._finished = False
+
+    @property
+    def msg(self):
+        return self._msg
+
+    @msg.setter
+    def msg(self, value):
+        self._msg = value
+        self._ctx.update_task(self._task_id, description=value)
 
     def finish(self, message: str | None = None, icon: str | None = None):
-        self._ctx._finish_task(
-            self._task_id, self._msg if message is None else message, icon=icon
-        )
+        if self._finished:
+            return
+
+        if message is not None:
+            self._msg = message
+
+        self._ctx._finish_task(self._task_id, self._msg, icon=icon)
+        self._finished = True
 
     def ok(self, message: str | None = None):
         self.finish(message, icon="[green]✓[/green]")

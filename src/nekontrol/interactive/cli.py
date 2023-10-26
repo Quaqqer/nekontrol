@@ -67,13 +67,10 @@ def test(
 @cli.command("submit", context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("file-path", metavar="FILE", type=executable_file)
 @click.option("-p", "--problem", type=str, help="The kattis problem name")
+@click.option("-y", "--yes", is_flag=True)
 @config_parser("file_path")
-def submit(
-    config: Config,
-    file_path: str,
-    problem: str | None,
-):
+def submit(config: Config, file_path: str, problem: str | None, yes: bool):
     """Submit a solution to Kattis."""
     setup_console()
 
-    commands.submit.submit(file_path, problem, config)
+    commands.submit.submit(file_path, problem, config, yes)
