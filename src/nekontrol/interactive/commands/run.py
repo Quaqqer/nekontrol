@@ -16,7 +16,8 @@ def run(
     sample: ProblemSample,
     config: Config,
     tctx: TaskContext | None = None,
-):
+    c: Console = Console(),
+) -> bool:
     task_msg = f"Testing with {sample.name}"
     task = tctx.add_task(task_msg) if tctx else None
 
@@ -24,8 +25,6 @@ def run(
     result = runnable.run(sample.input)
     finish = time.time()
     duration = finish - start
-
-    c = Console()
 
     bg = "black on bright_red"
     if duration < 1:
@@ -37,24 +36,22 @@ def run(
 
     task_finished_msg = task_msg + " " + time_msg
 
-    diff = None
-
     if config.diff and sample.output is not None:
-        diff = compare.compare_outputs(
-            result.stdout, sample.output, sample.input, config
-        )
+        diff = compare.diff(sample.output, result.stdout)
 
-        if isinstance(diff, bool):
-            if task:
-                task.ok(task_finished_msg)
-        else:
+        if diff:
             if task:
                 task.fail(task_finished_msg)
 
-        if isinstance(diff, str):
+            c.print("Input:")
+            c.print(escape(util.indented(sample.input)))
+            c.print("[yellow]Output:")
             c.print(diff)
-        elif diff is True:
-            c.print("[on yellow]NOTE: The output contained debug lines")
+
+            return False
+        else:
+            if task:
+                task.ok(task_finished_msg)
 
         if result.exit != 0:
             c.print(
@@ -63,8 +60,9 @@ def run(
             )
 
             if result.stderr:
-                c.print(util.indented(result.stderr), highlight=False)
-            return
+                c.print(escape(util.indented(result.stderr)))
+
+            return False
     else:
         if task:
             task.finish(task_finished_msg)
@@ -77,3 +75,5 @@ def run(
     if result.stderr:
         c.print("[yellow]Got stderr:")
         c.print(escape(util.indented(result.stderr)))
+
+    return True

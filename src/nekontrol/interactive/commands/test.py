@@ -17,12 +17,14 @@ def test(file_path, problem, config):
 
     c = Console()
 
+    fail = False
+
     if problem is None:
         if config.verbose:
             c.print(f"[yellow]No problem name specified, guessing '{file_base}'")
         problem = file_base
 
-    with TaskContext() as tctx:
+    with TaskContext(console=c) as tctx:
         samples = problems.problem_samples(file_base, file_dir, config, tctx=tctx)
 
         if len(samples) == 0:
@@ -37,4 +39,9 @@ def test(file_path, problem, config):
 
         with lang as runnable:
             for sample in samples:
-                run.run(file_name, runnable, sample, config, tctx=tctx)
+                res = run.run(file_name, runnable, sample, config, tctx=tctx, c=c)
+                if not res:
+                    fail = True
+
+    if fail:
+        exit(1)
