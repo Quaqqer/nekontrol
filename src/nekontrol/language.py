@@ -93,11 +93,11 @@ class InterpretedLanguage(Language, Protocol):
 
 class Python(InterpretedLanguage):
     bins = [
-        "pypy38",
-        "pypy3.8",
+        "pypy311",
+        "pypy3.11",
         "pypy3",
-        "python38",
-        "python3.8",
+        "python311",
+        "python3.11",
         "python3",
         "python",
     ]
