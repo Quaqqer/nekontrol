@@ -175,23 +175,26 @@ STATUS_ILLEGAL_FUNCTION = 13
 STATUS_WRONG_ANSWER = 14
 STATUS_ACCEPTED = 16
 
-STATUS_MESSAGES = {
-    STATUS_NEW: "New",
-    STATUS_WAIT_COMPILE: "Waiting for compile",
-    STATUS_COMPILING: "Compiling",
-    STATUS_WAIT_RUN: "Waiting for run",
-    STATUS_RUNNING: "Running",
-    STATUS_JUDGE_ERROR: "Judge Error",
-    STATUS_SUBMISSION_ERROR: "Submission Error",
-    STATUS_COMPILE_ERROR: "Compile Error",
-    STATUS_RUNTIME_ERROR: "Run Time Error",
-    STATUS_MEMORY_EXCEEDED: "Memory Limit Exceeded",
-    STATUS_OUTPUT_EXCEEDED: "Output Limit Exceeded",
-    STATUS_TIME_EXCEEDED: "Time Limit Exceeded",
-    STATUS_ILLEGAL_FUNCTION: "Illegal Function",
-    STATUS_WRONG_ANSWER: "Wrong Answer",
-    STATUS_ACCEPTED: "Accepted",
-}
+
+def get_status_message(status: int) -> str:
+    STATUS_MESSAGES = {
+        STATUS_NEW: "New",
+        STATUS_WAIT_COMPILE: "Waiting for compile",
+        STATUS_COMPILING: "Compiling",
+        STATUS_WAIT_RUN: "Waiting for run",
+        STATUS_RUNNING: "Running",
+        STATUS_JUDGE_ERROR: "Judge Error",
+        STATUS_SUBMISSION_ERROR: "Submission Error",
+        STATUS_COMPILE_ERROR: "Compile Error",
+        STATUS_RUNTIME_ERROR: "Run Time Error",
+        STATUS_MEMORY_EXCEEDED: "Memory Limit Exceeded",
+        STATUS_OUTPUT_EXCEEDED: "Output Limit Exceeded",
+        STATUS_TIME_EXCEEDED: "Time Limit Exceeded",
+        STATUS_ILLEGAL_FUNCTION: "Illegal Function",
+        STATUS_WRONG_ANSWER: "Wrong Answer",
+        STATUS_ACCEPTED: "Accepted",
+    }
+    return STATUS_MESSAGES.get(status, "Unknown status")
 
 
 @dataclass
@@ -247,7 +250,7 @@ def poll(submission_id: str, login_cookies: RequestsCookieJar) -> PollStatus:
     testcases_total = status["row_html"].count("<i") - 1
 
     if status_id == STATUS_COMPILE_ERROR:
-        msg = f"[red]{STATUS_MESSAGES[status_id]}[/red]"
+        msg = f"[red]{get_status_message(status_id)}[/red]"
 
         try:
             root = fragment_fromstring(status["feedback_html"], create_parent=True)
@@ -258,7 +261,7 @@ def poll(submission_id: str, login_cookies: RequestsCookieJar) -> PollStatus:
 
         return PollStatusPrepareErr(msg=msg)
     elif status_id < STATUS_RUNNING:
-        return PollStatusPreparing(f"{STATUS_MESSAGES[status_id]}")
+        return PollStatusPreparing(f"{get_status_message(status_id)}")
     elif status_id == STATUS_RUNNING:
         return PollStatusRunning(
             total_test_cases=testcases_total, successful_test_cases=testcases_done
@@ -266,7 +269,7 @@ def poll(submission_id: str, login_cookies: RequestsCookieJar) -> PollStatus:
     elif status_id == STATUS_ACCEPTED:
         return PollStatusAccepted(total_test_cases=testcases_total)
     else:  # some kind of error occurred
-        msg = STATUS_MESSAGES[status_id]
+        msg = get_status_message(status_id)
 
         try:  # to get cpu time if possible
             root = fragment_fromstring(status["row_html"], create_parent=True)
