@@ -57,8 +57,7 @@ class Language(Protocol):
         self.config = config
         self.tctx = tctx
 
-    def prepare(self) -> Runnable:
-        ...
+    def prepare(self) -> Runnable: ...
 
     def cleanup(self):
         pass
@@ -118,8 +117,7 @@ class CompiledLanguage(Language, Protocol):
     compiled_output: str
 
     @property
-    def cmdline(self) -> list[str]:
-        ...
+    def cmdline(self) -> list[str]: ...
 
     def prepare(self) -> Runnable:
         task = (
@@ -231,7 +229,7 @@ class Haskell(CompiledLanguage):
 
     @property
     def cmdline(self):
-        l = [
+        cmdline = [
             "ghc",
             "-outputdir",
             self.temp_out_dir,
@@ -245,9 +243,9 @@ class Haskell(CompiledLanguage):
             platform.system() == "Linux"
             and platform.freedesktop_os_release()["ID"] == "arch"
         ):
-            l.append("-dynamic")
+            cmdline.append("-dynamic")
 
-        return l
+        return cmdline
 
 
 def get_lang(

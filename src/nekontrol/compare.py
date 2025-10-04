@@ -21,8 +21,8 @@ def diff(expected: str, actual: str) -> str | None:
 
     rich_diff_lines = []
     for line in differ.compare(
-        [l.rstrip() for l in expected.splitlines()],
-        [l.rstrip() for l in actual.splitlines()],
+        [line.rstrip() for line in expected.splitlines()],
+        [line.rstrip() for line in actual.splitlines()],
     ):
         if not line[:2] == "  ":
             is_diff = True

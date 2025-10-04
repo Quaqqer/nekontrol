@@ -2,58 +2,19 @@ name: Nekontrol package
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  lint:
-    name: Lint
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry install
-
-      - name: Check lint
-        run: |
-          poetry run flake8 .
-
   format:
-    name: Format
+    name: Lint and format
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry install
-
-      - name: Check black formatting
-        run: |
-          poetry run black --check .
-
-      - name: Check isort formatting
-        run: |
-          poetry run isort --check .
+      - uses: astral-sh/ruff-action@v3
 
   test:
     name: Test
@@ -65,7 +26,7 @@ jobs:
 
       - name: Install compilers
         run: |
-          sudo apt install luajit nodejs rustc gcc ghc pypy
+          sudo apt install luajit nodejs rustc gcc ghc python3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -103,7 +64,6 @@ jobs:
         run: |
           sudo apt install nodejs
           npm install -g pyright
-
 
       - name: Type check
         run: |
