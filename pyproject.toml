@@ -21,7 +21,7 @@ requests = "^2.31.0"
 appdirs = "^1.4.4"
 natsort = "^8.4.0"
 rich = "^13.6.0"
-lxml = "^4.9.3"
+lxml = "^6.0.2"
 
 [tool.poetry.scripts]
 nk = 'nekontrol.interactive.cli:cli'
