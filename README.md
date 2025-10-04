@@ -29,8 +29,8 @@ The current supported languages are:
 > **Note**
 > Nekontrol will try to find a way to run your program, but it is not guranteed
 > that the program it uses matches the version that kattis has. For instance
-> kattis runs python with pypy 3.8. Nekontrol will try to run it with pypy 3.8,
-> but will fall back to other versions if it cannot be found.
+> kattis runs python with pypy 3.11. Nekontrol will try to run it with pypy
+> 3.11, but will fall back to other versions if it cannot be found.
 
 Adding more languages is left as an exercise for the reader.
 
